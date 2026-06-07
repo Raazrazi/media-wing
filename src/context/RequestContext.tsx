@@ -1,6 +1,7 @@
 import { createContext, useContext, useState, useEffect } from "react";
 import type { ReactNode } from "react";
 import type { PosterRequest } from "../types/Request";
+import api from "../services/api";
 
 export type UserRole = "Requester" | "Media Chairman" | "Media Wing Administrator";
 
@@ -23,14 +24,14 @@ interface RequestContextType {
   currentRole: UserRole;
   settings: SystemSettings;
   notifications: ActivityNotification[];
-  addRequest: (request: Omit<PosterRequest, "requestId" | "createdAt" | "status">) => PosterRequest;
-  updateRequestStatus: (id: string, status: PosterRequest["status"], remarks?: string) => void;
-  updateSettings: (settings: SystemSettings) => void;
+  addRequest: (request: Omit<PosterRequest, "requestId" | "createdAt" | "status">) => Promise<PosterRequest>;
+  updateRequestStatus: (id: string, status: PosterRequest["status"], remarks?: string) => Promise<void>;
+  updateSettings: (settings: SystemSettings) => Promise<void>;
   setCurrentRole: (role: UserRole) => void;
   addNotification: (message: string) => void;
   markNotificationsAsRead: () => void;
-  seedDemoData: () => void;
-  clearDatabase: () => void;
+  seedDemoData: () => Promise<void>;
+  clearDatabase: () => Promise<void>;
 }
 
 const RequestContext = createContext<RequestContextType | undefined>(undefined);
@@ -171,6 +172,27 @@ export function RequestProvider({ children }: { children: ReactNode }) {
     localStorage.setItem("union_media_notifications", JSON.stringify(notifications));
   }, [notifications]);
 
+  // Fetch data from backend on mount
+  useEffect(() => {
+    const fetchDataFromBackend = async () => {
+      try {
+        const [requestsRes, settingsRes] = await Promise.all([
+          api.get("/requests"),
+          api.get("/settings")
+        ]);
+        
+        setRequests(requestsRes.data);
+        setSettingsState(settingsRes.data);
+        console.log("Successfully synced data from MongoDB backend");
+      } catch (error) {
+        console.error("Failed to fetch data from backend. Using localStorage fallback:", error);
+        // Already initialized with localStorage data, so no action needed
+      }
+    };
+
+    fetchDataFromBackend();
+  }, []); // Run only on mount
+
   const setCurrentRole = (role: UserRole) => {
     setRoleState(role);
   };
@@ -189,73 +211,102 @@ export function RequestProvider({ children }: { children: ReactNode }) {
     setNotifications(prev => prev.map(n => ({ ...n, read: true })));
   };
 
-  const addRequest = (
+  const addRequest = async (
     requestData: Omit<PosterRequest, "requestId" | "createdAt" | "status">
   ) => {
-    const currentYear = new Date().getFullYear();
-    
-    // Find requests from the current year to calculate sequence
-    const yearPrefix = `REQ-${currentYear}-`;
-    const yearRequests = requests.filter(r => r.requestId.startsWith(yearPrefix));
-    
-    let nextNum = 1;
-    if (yearRequests.length > 0) {
-      const nums = yearRequests.map(r => {
-        const parts = r.requestId.split("-");
-        const numPart = parts[parts.length - 1];
-        return parseInt(numPart, 10);
-      });
-      nextNum = Math.max(...nums) + 1;
+    try {
+      // Call backend API to save to MongoDB
+      const response = await api.post("/requests", requestData);
+      const newRequest = response.data;
+      
+      // Update local state
+      setRequests(prev => [newRequest, ...prev]);
+      addNotification(`New request ${newRequest.requestId} for '${newRequest.programName}' has been submitted.`);
+      return newRequest;
+    } catch (error) {
+      console.error("Failed to add request:", error);
+      addNotification("Error: Failed to submit request to database.");
+      throw error;
     }
-    
-    const paddedNum = String(nextNum).padStart(3, "0");
-    const requestId = `${yearPrefix}${paddedNum}`;
-
-    const newRequest: PosterRequest = {
-      ...requestData,
-      requestId,
-      status: "Pending",
-      createdAt: new Date().toISOString()
-    };
-
-    setRequests(prev => [newRequest, ...prev]);
-    addNotification(`New request ${requestId} for '${newRequest.programName}' has been submitted.`);
-    return newRequest;
   };
 
-  const updateRequestStatus = (
+  const updateRequestStatus = async (
     id: string,
     status: PosterRequest["status"],
     remarks?: string
   ) => {
-    setRequests(prev =>
-      prev.map(r => {
-        if (r.requestId === id) {
-          const updated = { ...r, status, remarks: remarks !== undefined ? remarks : r.remarks };
-          addNotification(`Request ${id} status updated to '${status}'.`);
-          return updated;
-        }
-        return r;
-      })
-    );
+    try {
+      // Call backend API to update in MongoDB
+      const response = await api.put(`/requests/${id}/status`, { status, remarks });
+      const updatedRequest = response.data;
+      
+      // Update local state
+      setRequests(prev =>
+        prev.map(r => {
+          if (r.requestId === id) {
+            addNotification(`Request ${id} status updated to '${status}'.`);
+            return updatedRequest;
+          }
+          return r;
+        })
+      );
+    } catch (error) {
+      console.error("Failed to update request status:", error);
+      addNotification("Error: Failed to update request status in database.");
+      throw error;
+    }
   };
 
-  const updateSettings = (newSettings: SystemSettings) => {
-    setSettingsState(newSettings);
-    addNotification("System settings have been updated.");
+  const updateSettings = async (newSettings: SystemSettings) => {
+    try {
+      // Call backend API to update in MongoDB
+      const response = await api.put("/settings", newSettings);
+      const updatedSettings = response.data;
+      
+      // Update local state
+      setSettingsState(updatedSettings);
+      addNotification("System settings have been updated.");
+    } catch (error) {
+      console.error("Failed to update settings:", error);
+      addNotification("Error: Failed to update settings in database.");
+      throw error;
+    }
   };
 
-  const seedDemoData = () => {
-    setRequests(initialMockRequests);
-    setNotifications(initialNotifications);
-    setSettingsState(defaultSettings);
-    addNotification("Database seeded with sample demo requests.");
+  const seedDemoData = async () => {
+    try {
+      // Call backend API to seed database
+      await api.post("/seed");
+      
+      // Refresh local state from backend
+      const response = await api.get("/requests");
+      setRequests(response.data);
+      
+      const settingsResponse = await api.get("/settings");
+      setSettingsState(settingsResponse.data);
+      
+      setNotifications(initialNotifications);
+      addNotification("Database seeded with sample demo requests.");
+    } catch (error) {
+      console.error("Failed to seed database:", error);
+      addNotification("Error: Failed to seed database.");
+      throw error;
+    }
   };
 
-  const clearDatabase = () => {
-    setRequests([]);
-    setNotifications([]);
-    addNotification("Database cleared.");
+  const clearDatabase = async () => {
+    try {
+      // Call backend API to clear database
+      await api.delete("/clear");
+      
+      // Update local state
+      setRequests([]);
+      addNotification("Database cleared.");
+    } catch (error) {
+      console.error("Failed to clear database:", error);
+      addNotification("Error: Failed to clear database.");
+      throw error;
+    }
   };
 
   return (

@@ -51,11 +51,16 @@ export default function RequestDetails() {
     );
   }
 
-  const handleReviewSubmit = (e: React.FormEvent) => {
+  const handleReviewSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    updateRequestStatus(request.requestId, status, remarks);
-    setSuccessMsg("Request review status saved successfully.");
-    setTimeout(() => setSuccessMsg(""), 4000);
+    try {
+      await updateRequestStatus(request.requestId, status, remarks);
+      setSuccessMsg("Request review status saved successfully.");
+      setTimeout(() => setSuccessMsg(""), 4000);
+    } catch (error) {
+      console.error("Error updating status:", error);
+      setSuccessMsg("Error saving status to database.");
+    }
   };
 
   const getPriorityColor = (priority: string) => {

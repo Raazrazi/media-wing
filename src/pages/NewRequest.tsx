@@ -53,7 +53,7 @@ export default function NewRequest() {
     return Object.keys(newErrors).length === 0;
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
     if (!validate()) return;
@@ -71,9 +71,14 @@ export default function NewRequest() {
       return;
     }
 
-    // Submit request
-    const newRecord = addRequest(form);
-    setSuccessRequest(newRecord);
+    try {
+      // Submit request (now async)
+      const newRecord = await addRequest(form);
+      setSuccessRequest(newRecord);
+    } catch (error) {
+      console.error("Error submitting request:", error);
+      // Error notification is already handled in addRequest via context
+    }
   };
 
   const resetForm = () => {

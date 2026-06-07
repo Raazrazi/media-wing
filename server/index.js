@@ -42,65 +42,14 @@ const initialMockRequests = [
     status: "Pending",
     remarks: "Awaiting final layout confirmation from organizing secretary.",
     createdAt: new Date("2026-06-05T09:30:00Z")
-  },
-  {
-    requestId: "REQ-2026-002",
-    programName: "World Cup Panel Discussion",
-    programTitle: "The Beautiful Game: Tactics & Trends",
-    venue: "Seminar Hall - Block B",
-    committee: "LSRW Club (Literature & Sports)",
-    category: "Sports",
-    description: "An interactive panel discussion analyzing tactical developments, team dynamics, and future impacts of the FIFA World Cup tournament. Open to all sports enthusiasts.",
-    posterRequirements: "Vibrant sport-centric colors, modern abstract layout, football silhouettes. High resolution for Instagram feed post (1:1 aspect ratio).",
-    contactPerson: "Adhil Shah",
-    email: "adhil.shah@union.edu",
-    eventDateTime: "2026-06-28T16:00",
-    priority: "Normal",
-    status: "Approved",
-    remarks: "Approved. Designer assigned. Ready for distribution once layout is completed.",
-    createdAt: new Date("2026-06-06T14:15:00Z")
-  },
-  {
-    requestId: "REQ-2026-003",
-    programName: "College Archives Exhibition",
-    programTitle: "Echoes of History: College Union Retrospective",
-    venue: "Library Exhibition Corridor",
-    committee: "History & Archives Club",
-    category: "Academic",
-    description: "Exhibition displaying historical Union newsletters, student declarations, vintage photos, and award plaques dating back to 1980.",
-    posterRequirements: "Sepia and dark copper tones. Vintage typography, textured paper look. Digital promotion only.",
-    contactPerson: "Nadeem Ahmed",
-    email: "nadeem.ahmed@union.edu",
-    eventDateTime: "2026-06-12T11:00",
-    priority: "Normal",
-    status: "Rejected",
-    remarks: "Rejected: Conflicting schedule with University Semester Examinations. Please submit a rescheduled date request.",
-    createdAt: new Date("2026-06-07T08:00:00Z")
-  },
-  {
-    requestId: "REQ-2026-004",
-    programName: "Mega Tree Plantation Drive",
-    programTitle: "Go Green: 1000 Saplings Campaign",
-    venue: "Campus North Belt & Boundary Walls",
-    committee: "Environment Cell",
-    category: "Social",
-    description: "Large scale sapling plantation drive in association with the District Forest Department. Volunters from all class unions participating.",
-    posterRequirements: "Natural eco-themed colors, clean green leaf design elements. Physical poster (A3 size) + WhatsApp story graphic.",
-    contactPerson: "Safa Fathima",
-    email: "safa.fathima@union.edu",
-    eventDateTime: "2026-06-10T09:00",
-    priority: "Normal",
-    status: "Completed",
-    remarks: "Poster designed, approved, and successfully posted. Physical prints delivered to campus notice boards.",
-    createdAt: new Date("2026-06-04T10:00:00Z")
   }
 ];
 
 const defaultSettings = {
   portalName: "Students Union Media Portal",
-  chairman: "Prof. K. A. Rahman",
+  chairman: "Ahmed Jasim",
   deadline: 48,
-  email: "media@union.edu"
+  email: "media.chairman.disa@gmail.com"
 };
 
 // Database Initialization helper

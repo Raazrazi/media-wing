@@ -1,14 +1,19 @@
 import { useState, useRef, useEffect } from "react";
-import { Bell, Plus, Shield, Check, Menu } from "lucide-react";
-import { Link } from "react-router-dom";
+import { Bell, Plus, Shield, Check, Menu, LogOut, User, Lock } from "lucide-react";
+import { Link, useNavigate } from "react-router-dom";
 import { useRequests } from "../context/RequestContext";
+import { useAuth } from "../context/AuthContext";
 import type { UserRole } from "../context/RequestContext";
 
 interface NavbarProps {
   onMenuToggle: () => void;
+  isAdmin?: boolean;
+  adminUser?: string | null;
 }
 
-export default function Navbar({ onMenuToggle }: NavbarProps) {
+export default function Navbar({ onMenuToggle, isAdmin = false, adminUser = null }: NavbarProps) {
+  const navigate = useNavigate();
+  const { logout } = useAuth();
   const {
     currentRole,
     setCurrentRole,
@@ -19,9 +24,11 @@ export default function Navbar({ onMenuToggle }: NavbarProps) {
 
   const [showRoleMenu, setShowRoleMenu] = useState(false);
   const [showNotifMenu, setShowNotifMenu] = useState(false);
+  const [showAdminMenu, setShowAdminMenu] = useState(false);
 
   const roleMenuRef = useRef<HTMLDivElement>(null);
   const notifMenuRef = useRef<HTMLDivElement>(null);
+  const adminMenuRef = useRef<HTMLDivElement>(null);
 
   const unreadCount = notifications.filter(n => !n.read).length;
 
@@ -34,10 +41,18 @@ export default function Navbar({ onMenuToggle }: NavbarProps) {
       if (notifMenuRef.current && !notifMenuRef.current.contains(event.target as Node)) {
         setShowNotifMenu(false);
       }
+      if (adminMenuRef.current && !adminMenuRef.current.contains(event.target as Node)) {
+        setShowAdminMenu(false);
+      }
     }
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
+
+    const handleLogout = () => {
+      logout();
+      navigate("/admin/login", { replace: true });
+    };
 
   const roles: UserRole[] = ["Requester", "Media Chairman", "Media Wing Administrator"];
 
@@ -180,8 +195,47 @@ export default function Navbar({ onMenuToggle }: NavbarProps) {
         </div>
 
         {/* Quick New Request Button */}
+        {isAdmin && (
+          <div className="relative" ref={adminMenuRef}>
+            <button
+              onClick={() => setShowAdminMenu(!showAdminMenu)}
+              className="flex items-center gap-2 bg-blue-50 hover:bg-blue-100 transition text-blue-700 px-3.5 py-2 rounded-xl text-sm font-semibold border border-blue-200"
+            >
+              <Lock size={16} className="text-blue-600" />
+              <span>{adminUser || "Admin"}</span>
+              <span className="text-blue-400 text-xs">▼</span>
+            </button>
+
+            {showAdminMenu && (
+              <div className="absolute right-0 mt-2 w-56 bg-white border border-slate-200 rounded-2xl shadow-xl py-2 z-50 animate-scale-in">
+                <div className="px-4 py-2 border-b border-slate-100">
+                  <span className="text-xs text-slate-400 font-bold uppercase tracking-wider">Admin Portal</span>
+                  <p className="text-sm font-semibold text-slate-800 mt-1 flex items-center gap-2">
+                    <User size={14} />
+                    {adminUser || "Admin"}
+                  </p>
+                </div>
+                <Link
+                  to="/admin/settings"
+                  className="w-full text-left px-4 py-2.5 text-sm text-slate-700 hover:bg-slate-50 transition-colors flex items-center gap-2"
+                >
+                  <Shield size={14} className="text-slate-400" />
+                  Admin Settings
+                </Link>
+                <button
+                  onClick={handleLogout}
+                  className="w-full text-left px-4 py-2.5 text-sm text-red-600 hover:bg-red-50 transition-colors flex items-center gap-2 border-t border-slate-100 mt-2 pt-2"
+                >
+                  <LogOut size={14} />
+                  Logout
+                </button>
+              </div>
+            )}
+          </div>
+        )}
+
         <Link
-          to="/admin/new-request"
+          to={isAdmin ? "/admin/new-request" : "/new-request"}
           className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-xl flex items-center justify-center w-full sm:w-auto gap-2 text-sm font-semibold transition-all hover:shadow-glow-blue"
         >
           <Plus size={16} />

@@ -36,7 +36,7 @@ export default function Settings() {
     });
   }, [settings]);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     const deadlineNum = parseInt(form.deadline, 10);
     
@@ -45,30 +45,48 @@ export default function Settings() {
       return;
     }
 
-    updateSettings({
-      portalName: form.portalName,
-      chairman: form.chairman,
-      deadline: deadlineNum,
-      email: form.email
-    });
+    try {
+      await updateSettings({
+        portalName: form.portalName,
+        chairman: form.chairman,
+        deadline: deadlineNum,
+        email: form.email
+      });
 
-    setFeedback("Portal configurations updated successfully.");
-    setTimeout(() => setFeedback(""), 4000);
-  };
-
-  const handleSeed = () => {
-    if (window.confirm("Seed default mock requests into LocalStorage? This will restore standard sample events.")) {
-      seedDemoData();
-      setFeedback("Database seeded with sample demo requests.");
+      setFeedback("Portal configurations updated successfully.");
+      setTimeout(() => setFeedback(""), 4000);
+    } catch (error) {
+      console.error("Error updating settings:", error);
+      setFeedback("Error saving settings to database.");
       setTimeout(() => setFeedback(""), 4000);
     }
   };
 
-  const handleReset = () => {
-    clearDatabase();
-    setShowResetWarning(false);
-    setFeedback("Database has been completely cleared.");
-    setTimeout(() => setFeedback(""), 4000);
+  const handleSeed = async () => {
+    if (window.confirm("Seed default mock requests into MongoDB? This will restore standard sample events.")) {
+      try {
+        await seedDemoData();
+        setFeedback("Database seeded with sample demo requests.");
+        setTimeout(() => setFeedback(""), 4000);
+      } catch (error) {
+        console.error("Error seeding database:", error);
+        setFeedback("Error seeding database.");
+        setTimeout(() => setFeedback(""), 4000);
+      }
+    }
+  };
+
+  const handleReset = async () => {
+    try {
+      await clearDatabase();
+      setShowResetWarning(false);
+      setFeedback("Database has been completely cleared.");
+      setTimeout(() => setFeedback(""), 4000);
+    } catch (error) {
+      console.error("Error clearing database:", error);
+      setFeedback("Error clearing database.");
+      setTimeout(() => setFeedback(""), 4000);
+    }
   };
 
   return (
