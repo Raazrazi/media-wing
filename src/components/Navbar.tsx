@@ -1,0 +1,196 @@
+import { useState, useRef, useEffect } from "react";
+import { Bell, Plus, Shield, Check, Menu } from "lucide-react";
+import { Link } from "react-router-dom";
+import { useRequests } from "../context/RequestContext";
+import type { UserRole } from "../context/RequestContext";
+
+interface NavbarProps {
+  onMenuToggle: () => void;
+}
+
+export default function Navbar({ onMenuToggle }: NavbarProps) {
+  const {
+    currentRole,
+    setCurrentRole,
+    notifications,
+    markNotificationsAsRead,
+    settings
+  } = useRequests();
+
+  const [showRoleMenu, setShowRoleMenu] = useState(false);
+  const [showNotifMenu, setShowNotifMenu] = useState(false);
+
+  const roleMenuRef = useRef<HTMLDivElement>(null);
+  const notifMenuRef = useRef<HTMLDivElement>(null);
+
+  const unreadCount = notifications.filter(n => !n.read).length;
+
+  // Close menus when clicking outside
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (roleMenuRef.current && !roleMenuRef.current.contains(event.target as Node)) {
+        setShowRoleMenu(false);
+      }
+      if (notifMenuRef.current && !notifMenuRef.current.contains(event.target as Node)) {
+        setShowNotifMenu(false);
+      }
+    }
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
+  const roles: UserRole[] = ["Requester", "Media Chairman", "Media Wing Administrator"];
+
+  const handleRoleChange = (role: UserRole) => {
+    setCurrentRole(role);
+    setShowRoleMenu(false);
+  };
+
+  const handleNotifClick = () => {
+    setShowNotifMenu(!showNotifMenu);
+    if (!showNotifMenu) {
+      markNotificationsAsRead();
+    }
+  };
+
+  const formatTimeAgo = (isoStr: string) => {
+    const date = new Date(isoStr);
+    const seconds = Math.floor((new Date().getTime() - date.getTime()) / 1000);
+    
+    if (seconds < 60) return "just now";
+    const minutes = Math.floor(seconds / 60);
+    if (minutes < 60) return `${minutes}m ago`;
+    const hours = Math.floor(minutes / 60);
+    if (hours < 24) return `${hours}h ago`;
+    return date.toLocaleDateString();
+  };
+
+  return (
+    <header className="bg-white/80 backdrop-blur-md border-b border-slate-200 px-4 sm:px-8 py-4 sticky top-0 z-30">
+      <div className="flex flex-col md:flex-row md:justify-between md:items-center gap-4">
+        <div className="flex items-center gap-3">
+          <button
+            type="button"
+            onClick={onMenuToggle}
+            className="md:hidden p-2 rounded-xl border border-slate-200 bg-white text-slate-700 hover:bg-slate-50 transition"
+            aria-label="Open menu"
+          >
+            <Menu size={20} />
+          </button>
+          <div>
+            <h2 className="font-bold text-xl text-slate-800 tracking-tight">
+              {settings.portalName}
+            </h2>
+            <p className="text-xs text-slate-500 font-medium">
+              Poster & Publicity Design Queue
+            </p>
+          </div>
+        </div>
+
+        {/* Quick Controls */}
+        <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 sm:gap-6 w-full sm:w-auto">
+        
+        {/* Role Switcher */}
+        <div className="relative" ref={roleMenuRef}>
+          <button
+            onClick={() => setShowRoleMenu(!showRoleMenu)}
+            className="flex items-center gap-2 bg-slate-100 hover:bg-slate-200 transition text-slate-700 px-3.5 py-2 rounded-xl text-sm font-semibold border border-slate-200"
+          >
+            <Shield size={16} className="text-blue-600" />
+            <span>{currentRole}</span>
+            <span className="text-slate-400 text-xs">▼</span>
+          </button>
+
+          {showRoleMenu && (
+            <div className="absolute right-0 mt-2 w-64 bg-white border border-slate-200 rounded-2xl shadow-xl py-2 z-50 animate-scale-in">
+              <div className="px-4 py-2 border-b border-slate-100">
+                <span className="text-xs text-slate-400 font-bold uppercase tracking-wider">
+                  Select User Context
+                </span>
+              </div>
+              {roles.map(role => (
+                <button
+                  key={role}
+                  onClick={() => handleRoleChange(role)}
+                  className={`w-full text-left px-4 py-2.5 text-sm transition-colors flex items-center justify-between ${
+                    currentRole === role
+                      ? "bg-blue-50 text-blue-700 font-semibold"
+                      : "text-slate-700 hover:bg-slate-50"
+                  }`}
+                >
+                  <span>{role}</span>
+                  {currentRole === role && <Check size={16} />}
+                </button>
+              ))}
+            </div>
+          )}
+        </div>
+
+        {/* Notifications Center */}
+        <div className="relative" ref={notifMenuRef}>
+          <button
+            onClick={handleNotifClick}
+            className="relative p-2 rounded-xl border border-slate-200 hover:bg-slate-50 transition text-slate-600"
+          >
+            <Bell size={20} />
+            {unreadCount > 0 && (
+              <span className="absolute -top-1.5 -right-1.5 bg-red-500 text-white text-[10px] font-bold h-5 w-5 rounded-full flex items-center justify-center border-2 border-white shadow-sm">
+                {unreadCount}
+              </span>
+            )}
+          </button>
+
+          {showNotifMenu && (
+            <div className="absolute right-0 mt-2 w-80 md:w-96 bg-white border border-slate-200 rounded-2xl shadow-xl py-2 z-50 animate-scale-in">
+              <div className="px-4 py-2 border-b border-slate-100 flex justify-between items-center">
+                <span className="text-xs text-slate-500 font-bold uppercase tracking-wider">
+                  Recent Activity Logs
+                </span>
+                {unreadCount > 0 && (
+                  <span className="text-[10px] bg-red-100 text-red-600 px-2 py-0.5 rounded-full font-bold">
+                    {unreadCount} New
+                  </span>
+                )}
+              </div>
+              <div className="max-h-80 overflow-y-auto custom-scrollbar">
+                {notifications.length === 0 ? (
+                  <div className="px-4 py-8 text-center text-slate-400 text-sm">
+                    No recent notifications
+                  </div>
+                ) : (
+                  notifications.map(notif => (
+                    <div
+                      key={notif.id}
+                      className={`px-4 py-3 border-b border-slate-50 hover:bg-slate-50/50 transition-colors ${
+                        !notif.read ? "bg-blue-50/20" : ""
+                      }`}
+                    >
+                      <p className="text-sm text-slate-700 leading-snug">
+                        {notif.message}
+                      </p>
+                      <span className="text-[10px] text-slate-400 mt-1 block">
+                        {formatTimeAgo(notif.timestamp)}
+                      </span>
+                    </div>
+                  ))
+                )}
+              </div>
+            </div>
+          )}
+        </div>
+
+        {/* Quick New Request Button */}
+        <Link
+          to="/admin/new-request"
+          className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-xl flex items-center justify-center w-full sm:w-auto gap-2 text-sm font-semibold transition-all hover:shadow-glow-blue"
+        >
+          <Plus size={16} />
+          New Request
+        </Link>
+
+      </div>
+    </div>
+
+    </header>
+  );
+}

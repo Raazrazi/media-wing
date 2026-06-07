@@ -1,0 +1,373 @@
+# PRODUCT REQUIREMENTS DOCUMENT (PRD)
+
+## Project Title
+
+Students' Union Media Request & Poster Registration Portal
+
+## Version
+
+1.0
+
+## Owner
+
+Students' Union Media Wing
+
+## Purpose
+
+To establish a centralized digital system through which all committees, class unions, and subcommittees can submit poster and publicity requests to the Media Wing.
+
+The system will enforce submission deadlines, streamline communication, maintain records, and improve planning efficiency.
+
+---
+
+# Problem Statement
+
+Currently, poster requests are submitted through informal channels, resulting in:
+
+* Late submissions
+* Missing information
+* Difficulty tracking requests
+* Lack of accountability
+* Increased workload for the Media Wing
+
+The portal aims to solve these issues through structured digital registration and automated validation.
+
+---
+
+# Objectives
+
+1. Centralize all poster requests.
+2. Enforce a mandatory 48-hour submission deadline.
+3. Maintain a permanent request database.
+4. Allow Media Wing administrators to review requests efficiently.
+5. Improve communication between organizers and the Media Wing.
+6. Generate reports for auditing and union documentation.
+
+---
+
+# User Roles
+
+## 1. Requester
+
+Can:
+
+* Submit poster requests
+* View submission confirmation
+* Receive status updates
+
+Examples:
+
+* Class Union Secretary
+* Subcommittee Convener
+* Program Coordinator
+
+---
+
+## 2. Media Chairman
+
+Can:
+
+* Access Admin Dashboard
+* View all requests
+* Approve requests
+* Reject requests
+* Add remarks
+* Export reports
+
+---
+
+## 3. Media Wing Administrator
+
+Can:
+
+* Manage requests
+* Update status
+* View analytics
+* Generate reports
+
+---
+
+# Functional Requirements
+
+## FR-01 Program Registration Form
+
+Required Fields:
+
+* Program Name
+* Program Title
+* Program Date
+* Program Time
+* Venue
+* Organizing Committee
+* Program Category
+* Detailed Description
+* Poster Requirements
+* Contact Person
+* Phone Number
+
+All fields are mandatory unless specified otherwise.
+
+---
+
+## FR-02 Unique Registration ID
+
+System shall generate IDs automatically.
+
+Format:
+
+REQ-YYYY-001
+
+Example:
+
+REQ-2026-001
+
+---
+
+## FR-03 48-Hour Deadline Validation
+
+System shall compare:
+
+Current Time
+
+with
+
+Program Date & Time
+
+Rule:
+
+Submission must be at least 48 hours before the event.
+
+If less than 48 hours remain:
+
+Registration shall be blocked.
+
+---
+
+## FR-04 Warning Message
+
+Display:
+
+WARNING
+
+Poster registration closes strictly 48 hours before the scheduled program time.
+
+Requests submitted after this deadline will not be accepted and may be automatically canceled by the Media Wing.
+
+Please contact the Media Chairman for special approval.
+
+---
+
+## FR-05 Database Storage
+
+Every successful submission shall store:
+
+* Timestamp
+* Registration ID
+* Request Details
+* Status
+
+Database:
+
+Google Sheets (Phase 1)
+
+Future:
+
+Firebase / PostgreSQL
+
+---
+
+## FR-06 Submission Confirmation
+
+After successful registration:
+
+Display:
+
+Request Submitted Successfully
+
+Registration ID: REQ-XXXX
+
+Status: Pending Review
+
+---
+
+## FR-07 Admin Dashboard
+
+Dashboard Statistics:
+
+* Total Requests
+* Pending Requests
+* Approved Requests
+* Rejected Requests
+* Upcoming Events
+
+---
+
+## FR-08 Request Management
+
+Admin actions:
+
+* Approve
+* Reject
+* Hold
+* Add Remarks
+
+Status Values:
+
+* Pending
+* Approved
+* Rejected
+* Completed
+
+---
+
+## FR-09 Search & Filter
+
+Filters:
+
+* Date
+* Committee
+* Status
+* Program Category
+
+Search by:
+
+* Registration ID
+* Program Name
+
+---
+
+## FR-10 Report Export
+
+Generate:
+
+* Excel Reports
+* PDF Reports
+
+For:
+
+* Monthly Audit
+* Union Presentation
+* Annual Documentation
+
+---
+
+# Non-Functional Requirements
+
+## Design
+
+Theme:
+
+Professional University Portal
+
+Style:
+
+Modern
+Clean
+Responsive
+Mobile Friendly
+
+Colors:
+
+Primary:
+#0F172A
+
+Secondary:
+#2563EB
+
+Accent:
+#F59E0B
+
+Background:
+#F8FAFC
+
+---
+
+## Performance
+
+Page Load:
+
+Less than 3 seconds
+
+Submission Processing:
+
+Less than 2 seconds
+
+---
+
+## Security
+
+* HTTPS
+* Input Validation
+* Spam Protection
+* Admin Authentication
+
+---
+
+# Dashboard Sections
+
+1. Home
+2. New Request
+3. Request History
+4. Analytics
+5. Reports
+6. Settings
+
+---
+
+# Analytics Module
+
+Show:
+
+* Requests per Month
+* Most Active Committee
+* Approval Rate
+* Rejection Rate
+* Upcoming Programs
+
+---
+
+# Notifications
+
+Phase 1:
+
+* On-screen confirmation
+
+Phase 2:
+
+* Email Notifications
+* WhatsApp Notifications
+
+---
+
+# Future Enhancements
+
+* Poster file upload
+* Event banner requests
+* Video promotion requests
+* Social media publication requests
+* QR code tracking
+* Mobile application
+* Multi-admin roles
+* Automated poster production queue
+
+---
+
+# Success Metrics
+
+* 100% poster requests submitted through the portal
+* Reduction in late requests
+* Faster approval workflow
+* Complete digital archive of Media Wing activities
+
+---
+
+# Launch Target
+
+Phase 1:
+Poster Registration Portal + Google Sheets Backend
+
+Phase 2:
+Admin Dashboard + Analytics
+
+Phase 3:
+Full Media Management System
