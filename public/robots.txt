@@ -1,0 +1,3 @@
+User-agent: *
+Allow: /
+Sitemap: https://disamedia.vercel.app/sitemap.xml
