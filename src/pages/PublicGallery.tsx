@@ -123,7 +123,7 @@ export default function PublicGallery() {
           <div className="bg-white border border-slate-200 rounded-3xl p-6 max-w-3xl w-full shadow-2xl relative overflow-hidden animate-scale-in flex flex-col">
             <button
               onClick={() => setActiveMedia(null)}
-              className="absolute top-4 right-4 p-2 bg-slate-100 hover:bg-slate-200 text-slate-500 rounded-full transition cursor-pointer"
+              className="absolute top-4 right-4 p-2 bg-slate-950/50 hover:bg-slate-950/80 backdrop-blur-sm text-white rounded-full transition cursor-pointer z-50 shadow-md border border-white/10"
             >
               <X size={18} />
             </button>
