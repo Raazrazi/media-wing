@@ -29,7 +29,14 @@ function DualInput({
     const objectUrl = URL.createObjectURL(file);
     setPreview(objectUrl);
     setFileName(file.name);
-    onFileChange(objectUrl);
+
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      if (typeof reader.result === "string") {
+        onFileChange(reader.result);
+      }
+    };
+    reader.readAsDataURL(file);
   };
 
   const isVideo = accept.includes("video");

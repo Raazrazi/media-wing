@@ -17,12 +17,19 @@ import {
 
 // Committees list
 const committees = [
-  "History Club", 
-  "Class Union 2026", 
-  "Fine Arts Committee", 
-  "Sports Committee", 
-  "Media Wing", 
+  "English Wing", 
+  "Arabic Wing", 
+  "Urdu Wing", 
+  "Malayalam Wing", 
+  "SKSSF Wing",
+  "Hizb Wing",
+  "SRD Wing",
+  'Library Wing',
+  "Intellectual Wing",
+  "Editorial Wing",
+  "Media & IT Wing",
   "Other"
+  
 ];
 
 // Categories list
