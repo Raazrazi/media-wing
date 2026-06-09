@@ -197,7 +197,7 @@ export default function PortalHome() {
                 <div className="relative aspect-video bg-slate-900">
                   {latestPoster ? (
                     <img
-                      src={latestPoster.thumbnail}
+                      src={latestPoster.mediaFile || latestPoster.thumbnail}
                       alt={latestPoster.title}
                       className="w-full h-full object-cover opacity-90"
                     />
@@ -236,7 +236,7 @@ export default function PortalHome() {
                   {latestVideo ? (
                     <>
                       <img
-                        src={latestVideo.thumbnail}
+                        src={latestVideo.thumbnail || latestVideo.mediaFile}
                         alt={latestVideo.title}
                         className="absolute inset-0 w-full h-full object-cover opacity-60 group-hover:scale-105 transition duration-300"
                       />
