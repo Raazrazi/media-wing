@@ -1,11 +1,17 @@
 import { useState, useMemo } from "react";
 import { useRequests } from "../context/RequestContext";
 import RequestTable from "../components/RequestTable";
+import LoadingSpinner from "../components/LoadingSpinner";
+import ErrorToast from "../components/ErrorToast";
 import { Search, RefreshCw, Plus } from "lucide-react";
 import { Link, useLocation } from "react-router-dom";
 
 export default function RequestHistory() {
-  const { requests } = useRequests();
+  const contextData = useRequests();
+  const requests = Array.isArray(contextData?.requests) ? contextData.requests : [];
+  const isLoading = contextData?.isLoading;
+  const error = contextData?.error;
+  const clearError = contextData?.clearError;
   const location = useLocation();
   const isAdmin = location.pathname.startsWith("/admin");
   const newRequestPath = isAdmin ? "/admin/new-request" : "/new-request";
@@ -81,6 +87,10 @@ export default function RequestHistory() {
 
   return (
     <div className="space-y-6 animate-fade-in">
+      {isLoading && <LoadingSpinner />}
+      {error && clearError && (
+        <ErrorToast message={error} onClose={clearError} />
+      )}
       
       {/* Page Title Header */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">

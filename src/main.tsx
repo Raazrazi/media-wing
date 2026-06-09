@@ -5,6 +5,7 @@ import App from "./App";
 import { AuthProvider } from "./context/AuthContext";
 import { RequestProvider } from "./context/RequestContext";
 import "./index.css";
+import "./styles/designTokens.css";
 
 ReactDOM.createRoot(
   document.getElementById("root")!

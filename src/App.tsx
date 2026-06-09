@@ -1,4 +1,4 @@
-﻿import { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { Routes, Route, Navigate, Outlet, useLocation } from "react-router-dom";
 
 import PublicLayout from "./layouts/PublicLayout";
@@ -11,8 +11,22 @@ import RequestDetails from "./pages/RequestDetails";
 import Analytics from "./pages/Analytics";
 import Reports from "./pages/Reports";
 import Settings from "./pages/Settings";
+import Results from "./pages/results/Results";
+import AddResult from "./pages/results/AddResult";
+import Leaderboard from "./pages/results/Leaderboard";
+import MinusPoints from "./pages/results/MinusPoints";
+import Programs from "./pages/results/Programs";
+import Students from "./pages/results/Students";
 import Sidebar from "./components/Sidebar";
 import Navbar from "./components/Navbar";
+
+// New page imports
+import PortalHome from "./pages/PortalHome";
+import PublicGallery from "./pages/PublicGallery";
+import AdminGallery from "./pages/AdminGallery";
+import Announcements from "./pages/Announcements";
+import AdminAnnouncements from "./pages/AdminAnnouncements";
+import ResultsDashboard from "./pages/results/ResultsDashboard";
 
 function AdminShell() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -23,8 +37,8 @@ function AdminShell() {
   }, [location.pathname]);
 
   return (
-    <div className="flex min-h-screen bg-slate-100">
-      <Sidebar open={sidebarOpen} onClose={() => setSidebarOpen(false)} />
+    <div className="flex min-h-screen bg-slate-100 animate-fade-in">
+      <Sidebar open={sidebarOpen} onClose={() => setSidebarOpen(false)} isAdmin={true} />
       {sidebarOpen && (
         <div
           onClick={() => setSidebarOpen(false)}
@@ -32,7 +46,7 @@ function AdminShell() {
         />
       )}
       <div className="flex-1 flex flex-col min-h-screen">
-        <Navbar onMenuToggle={() => setSidebarOpen((prev) => !prev)} />
+        <Navbar onMenuToggle={() => setSidebarOpen((prev) => !prev)} isAdmin={true} />
         <main className="p-6 md:p-8">
           <Outlet />
         </main>
@@ -62,14 +76,32 @@ export default function App() {
         <Route path="request/:id" element={<RequestDetails />} />
         <Route path="analytics" element={<Analytics />} />
         <Route path="reports" element={<Reports />} />
+        <Route path="results-dashboard" element={<ResultsDashboard />} />
+        <Route path="announced-results" element={<Results mode="announced" />} />
+        <Route path="all-results" element={<Results mode="all" />} />
+        <Route path="add-result" element={<AddResult />} />
+        <Route path="leaderboard" element={<Leaderboard />} />
+        <Route path="minus-points" element={<MinusPoints />} />
+        <Route path="programs" element={<Programs />} />
+        <Route path="students" element={<Students />} />
+        <Route path="gallery" element={<AdminGallery />} />
+        <Route path="announcements" element={<AdminAnnouncements />} />
         <Route path="settings" element={<Settings />} />
       </Route>
 
+      {/* Public portal routes */}
       <Route path="/" element={<PublicLayout />}>
-        <Route index element={<NewRequest />} />
+        <Route index element={<PortalHome />} />
         <Route path="new-request" element={<NewRequest />} />
         <Route path="requests" element={<RequestHistory />} />
         <Route path="request/:id" element={<RequestDetails />} />
+        <Route path="results" element={<Results mode="public" />} />
+        <Route path="leaderboard" element={<Leaderboard />} />
+        <Route path="rankings" element={<Students />} />
+        <Route path="programs" element={<Programs />} />
+        <Route path="minus-points" element={<MinusPoints />} />
+        <Route path="gallery" element={<PublicGallery />} />
+        <Route path="announcements" element={<Announcements />} />
       </Route>
 
       <Route path="*" element={<Navigate to="/" replace />} />

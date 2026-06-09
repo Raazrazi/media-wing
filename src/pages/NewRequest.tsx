@@ -1,7 +1,10 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { useRequests } from "../context/RequestContext";
 import WarningModal from "../components/WarningModel";
+import GlassCard from "../components/GlassCard";
+import LoadingSpinner from "../components/LoadingSpinner";
+import ErrorToast from "../components/ErrorToast";
 import FormSection from "../components/FormSection";
 import { 
   FileText, 
@@ -12,8 +15,21 @@ import {
   AlertCircle
 } from "lucide-react";
 
+// Committees list
+const committees = [
+  "History Club", 
+  "Class Union 2026", 
+  "Fine Arts Committee", 
+  "Sports Committee", 
+  "Media Wing", 
+  "Other"
+];
+
+// Categories list
+const categories = ["Academic", "Cultural", "Sports", "Technical", "Social", "Union Initiative", "Other"];
+
 export default function NewRequest() {
-  const { addRequest, settings } = useRequests();
+  const { addRequest, settings, isLoading, error } = useRequests();
   const location = useLocation();
   const backPath = location.pathname.startsWith("/admin") ? "/admin/dashboard" : "/";
   const backLabel = location.pathname.startsWith("/admin") ? "Back to Dashboard" : "Back to Home";
@@ -25,7 +41,7 @@ export default function NewRequest() {
     programName: "",
     programTitle: "",
     venue: "",
-    committee: "",
+    committee: committees[0], // Defaulted to the first item in the array
     category: "Academic",
     eventDateTime: "",
     description: "",
@@ -86,7 +102,7 @@ export default function NewRequest() {
       programName: "",
       programTitle: "",
       venue: "",
-      committee: "",
+      committee: committees[0], // Reset to the first item in the array
       category: "Academic",
       eventDateTime: "",
       description: "",
@@ -102,9 +118,6 @@ export default function NewRequest() {
   const handlePrint = () => {
     window.print();
   };
-
-  // Categories list
-  const categories = ["Academic", "Cultural", "Sports", "Technical", "Social", "Union Initiative", "Other"];
 
   // Success view block
   if (successRequest) {
@@ -219,7 +232,10 @@ export default function NewRequest() {
         onClose={() => setShowWarning(false)}
       />
 
-      <div className="max-w-4xl mx-auto space-y-8 animate-slide-up">
+      {isLoading && <LoadingSpinner />}
+      {error && <ErrorToast message={error} onClose={() => {}} />}
+
+      <GlassCard className="max-w-4xl mx-auto space-y-8 animate-slide-up">
         
         {/* Title widget */}
         <div className="flex items-center justify-between border-b pb-5 border-slate-200">
@@ -254,7 +270,7 @@ export default function NewRequest() {
         {/* Form Container */}
         <form onSubmit={handleSubmit} className="space-y-8">
           
-          {/* Section 1: Basic Event */}
+          {/* Section 1: Program Details */}
           <FormSection title="1. Program Details">
             <div className="grid md:grid-cols-2 gap-5">
               
@@ -340,13 +356,15 @@ export default function NewRequest() {
               
               <div>
                 <label className="block text-sm font-bold text-slate-700 mb-2">Organizing Body / Committee Name</label>
-                <input
-                  type="text"
+                <select
                   value={form.committee}
                   onChange={(e) => setForm({ ...form, committee: e.target.value })}
-                  placeholder="e.g. History Club, Class Union 2026"
                   className={`w-full border rounded-xl p-3 text-sm transition-all focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 ${errors.committee ? "border-red-500 bg-red-50/20" : "border-slate-200"}`}
-                />
+                >
+                  {committees.map(comm => (
+                    <option key={comm} value={comm}>{comm}</option>
+                  ))}
+                </select>
                 {errors.committee && <p className="text-red-500 text-xs mt-1.5 font-semibold">⚠️ {errors.committee}</p>}
               </div>
 
@@ -427,7 +445,7 @@ export default function NewRequest() {
 
         </form>
 
-      </div>
+      </GlassCard>
     </>
   );
 }

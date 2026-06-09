@@ -13,7 +13,7 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 // Phase 1: hardcoded credentials — replace with server auth in Phase 2
 const ADMIN_CREDENTIALS = {
   username: "admin",
-  password: "passthroughadmin",
+  password: "disaleading",
 };
 
 export function AuthProvider({ children }: { children: ReactNode }) {

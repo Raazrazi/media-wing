@@ -15,8 +15,9 @@ import {
 } from "lucide-react";
 
 export default function Dashboard() {
-  const { requests } = useRequests();
-
+  const contextData = useRequests();
+  const requests = Array.isArray(contextData?.requests) ? contextData.requests : [];
+  
   // Metrics calculation
   const totalCount = requests.length;
   const pendingCount = requests.filter(r => r.status === "Pending").length;

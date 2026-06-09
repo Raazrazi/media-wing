@@ -5,7 +5,10 @@ import {
   FileText,
   Download,
   Calendar,
-  Trash2
+  Trash2,
+  Trophy,
+  Users,
+  Award
 } from "lucide-react";
 
 interface ReportLog {
@@ -17,7 +20,10 @@ interface ReportLog {
 }
 
 export default function Reports() {
-  const { requests } = useRequests();
+  const contextData = useRequests();
+  const requests = Array.isArray(contextData?.requests) ? contextData.requests : [];
+  const results = Array.isArray(contextData?.results) ? contextData.results : [];
+  const minusPoints = Array.isArray(contextData?.minusPoints) ? contextData.minusPoints : [];
   const [reportLogs, setReportLogs] = useState<ReportLog[]>(() => {
     const saved = localStorage.getItem("union_media_report_logs");
     if (saved) return JSON.parse(saved);
@@ -56,6 +62,69 @@ export default function Reports() {
 
   const deleteLog = (id: string) => {
     setReportLogs(prev => prev.filter(log => log.id !== id));
+  };
+
+  // Helper: trigger CSV file download
+  const downloadCsv = (csvContent: string, filename: string) => {
+    const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.setAttribute("href", url);
+    link.setAttribute("download", filename);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
+  // Export all published results as CSV
+  const handleResultsExport = () => {
+    const published = results.filter(r => r.isPublished);
+    const headers = ["Student Name", "Class", "Program Name", "Prize", "Points Awarded"];
+    const rows = published.map(r => [
+      `"${r.studentName}"`,
+      r.className,
+      `"${r.programName.replace(/"/g, '""')}"`,
+      r.prize,
+      r.points
+    ]);
+    const csv = [headers.join(","), ...rows.map(e => e.join(","))].join("\n");
+    downloadCsv(csv, `results_report_${new Date().toISOString().slice(0, 10)}.csv`);
+    addReportLog(`Results Export (${published.length} entries)`, "Excel", `${published.length} rows`);
+  };
+
+  // Export championship leaderboard as CSV
+  const handleLeaderboardExport = () => {
+    const classes = ["SIDRA", "USRA", "WAFD", "WIDAD", "ITHIHAD", "IFADA"];
+    const standings = classes.map(cls => {
+      const earned = results.filter(r => r.className === cls && r.isPublished).reduce((s, r) => s + r.points, 0);
+      const minus  = minusPoints.filter(m => m.className === cls).reduce((s, m) => s + m.points, 0);
+      return { cls, earned, minus, net: earned - minus };
+    }).sort((a, b) => b.net - a.net);
+
+    const headers = ["Rank", "Class", "Earned Points", "Minus Deductions", "Net Points"];
+    const rows = standings.map((s, i) => [i + 1, s.cls, s.earned, s.minus, s.net]);
+    const csv = [headers.join(","), ...rows.map(e => e.join(","))].join("\n");
+    downloadCsv(csv, `leaderboard_${new Date().toISOString().slice(0, 10)}.csv`);
+    addReportLog("Championship Leaderboard Export", "Excel", `${standings.length} classes`);
+  };
+
+  // Export student rankings as CSV
+  const handleRankingsExport = () => {
+    const studentMap: Record<string, { className: string; points: number }> = {};
+    results.filter(r => r.isPublished).forEach(r => {
+      const key = r.studentName.trim();
+      if (!studentMap[key]) studentMap[key] = { className: r.className, points: 0 };
+      studentMap[key].points += r.points;
+    });
+    const rankings = Object.entries(studentMap)
+      .map(([name, d]) => ({ name, className: d.className, points: d.points }))
+      .sort((a, b) => b.points - a.points)
+      .map((s, i) => [i + 1, `"${s.name}"`, s.className, s.points]);
+
+    const headers = ["Rank", "Student Name", "Class", "Total Points"];
+    const csv = [headers.join(","), ...rankings.map(e => e.join(","))].join("\n");
+    downloadCsv(csv, `student_rankings_${new Date().toISOString().slice(0, 10)}.csv`);
+    addReportLog(`Student Rankings Export (${rankings.length} students)`, "Excel", `${rankings.length} rows`);
   };
 
   const handleExcelExport = () => {
@@ -202,7 +271,7 @@ export default function Reports() {
           Report Export Center
         </h1>
         <p className="text-slate-500 mt-1 font-medium">
-          Generate structured PDF summaries, excel dumps, and audit logs.
+          Generate PDF summaries, excel dumps, audit logs, and championship exports.
         </p>
       </div>
 
@@ -293,6 +362,86 @@ export default function Reports() {
           </button>
         </div>
 
+      </div>
+
+      {/* ── Championship Export Cards ── */}
+      <div>
+        <h2 className="text-sm font-black text-slate-400 uppercase tracking-widest mb-4">Championship Reports</h2>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+
+          {/* Results CSV */}
+          <div className="bg-white rounded-3xl border border-slate-200/80 p-6 flex flex-col justify-between hover:shadow-md transition shadow-sm">
+            <div>
+              <div className="flex justify-between items-start">
+                <span className="p-3 bg-yellow-50 text-yellow-600 rounded-2xl border border-yellow-100">
+                  <Trophy size={22} />
+                </span>
+              </div>
+              <h3 className="font-extrabold text-slate-800 mt-4 text-base">Published Results</h3>
+              <p className="text-slate-400 text-xs mt-1.5 leading-relaxed font-medium">
+                Export all published championship results as a CSV spreadsheet.
+              </p>
+              <p className="text-xs text-slate-500 mt-3 font-semibold">
+                {results.filter(r => r.isPublished).length} published entries
+              </p>
+            </div>
+            <button
+              onClick={handleResultsExport}
+              disabled={results.filter(r => r.isPublished).length === 0}
+              className="w-full mt-6 bg-yellow-500 hover:bg-yellow-600 disabled:opacity-40 disabled:cursor-not-allowed text-white font-bold text-xs py-3 rounded-xl transition shadow-sm"
+            >
+              Export Results CSV
+            </button>
+          </div>
+
+          {/* Leaderboard CSV */}
+          <div className="bg-white rounded-3xl border border-slate-200/80 p-6 flex flex-col justify-between hover:shadow-md transition shadow-sm">
+            <div>
+              <div className="flex justify-between items-start">
+                <span className="p-3 bg-rose-50 text-rose-600 rounded-2xl border border-rose-100">
+                  <Award size={22} />
+                </span>
+              </div>
+              <h3 className="font-extrabold text-slate-800 mt-4 text-base">Class Leaderboard</h3>
+              <p className="text-slate-400 text-xs mt-1.5 leading-relaxed font-medium">
+                Export class-level championship standings with net points.
+              </p>
+              <p className="text-xs text-slate-500 mt-3 font-semibold">6 class unions ranked</p>
+            </div>
+            <button
+              onClick={handleLeaderboardExport}
+              className="w-full mt-6 bg-rose-600 hover:bg-rose-700 text-white font-bold text-xs py-3 rounded-xl transition shadow-sm"
+            >
+              Export Leaderboard CSV
+            </button>
+          </div>
+
+          {/* Student Rankings CSV */}
+          <div className="bg-white rounded-3xl border border-slate-200/80 p-6 flex flex-col justify-between hover:shadow-md transition shadow-sm">
+            <div>
+              <div className="flex justify-between items-start">
+                <span className="p-3 bg-indigo-50 text-indigo-600 rounded-2xl border border-indigo-100">
+                  <Users size={22} />
+                </span>
+              </div>
+              <h3 className="font-extrabold text-slate-800 mt-4 text-base">Student Rankings</h3>
+              <p className="text-slate-400 text-xs mt-1.5 leading-relaxed font-medium">
+                Export individual student point tallies ranked by total score.
+              </p>
+              <p className="text-xs text-slate-500 mt-3 font-semibold">
+                {new Set(results.filter(r => r.isPublished).map(r => r.studentName)).size} ranked students
+              </p>
+            </div>
+            <button
+              onClick={handleRankingsExport}
+              disabled={results.filter(r => r.isPublished).length === 0}
+              className="w-full mt-6 bg-indigo-600 hover:bg-indigo-700 disabled:opacity-40 disabled:cursor-not-allowed text-white font-bold text-xs py-3 rounded-xl transition shadow-sm"
+            >
+              Export Rankings CSV
+            </button>
+          </div>
+
+        </div>
       </div>
 
       {/* Reports history log */}

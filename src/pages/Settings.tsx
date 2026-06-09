@@ -13,29 +13,31 @@ import {
 } from "lucide-react";
 
 export default function Settings() {
-  const { settings, updateSettings, seedDemoData, clearDatabase } = useRequests();
+  const { settings, updateSettings, seedDemoData, clearDatabase, uploadDataset } = useRequests();
 
-  // Settings form local state
+  // Settings form local state with defensive fallbacks
   const [form, setForm] = useState({
-    portalName: settings.portalName,
-    chairman: settings.chairman,
-    deadline: String(settings.deadline),
-    email: settings.email
+    portalName: settings?.portalName || "",
+    chairman: settings?.chairman || "",
+    deadline: String(settings?.deadline ?? ""),
+    email: settings?.email || ""
   });
 
   const [feedback, setFeedback] = useState("");
   const [showResetWarning, setShowResetWarning] = useState(false);
+  const [uploadCollection, setUploadCollection] = useState("students");
+  const [uploadFile, setUploadFile] = useState<File | null>(null);
 
-  // Keep form in sync if settings update externally (e.g. database seed)
+  // Keep form in sync safely when database updates settle
   useEffect(() => {
     setForm({
-      portalName: settings.portalName,
-      chairman: settings.chairman,
-      deadline: String(settings.deadline),
-      email: settings.email
+      portalName: settings?.portalName || "",
+      chairman: settings?.chairman || "",
+      deadline: String(settings?.deadline ?? ""),
+      email: settings?.email || ""
     });
   }, [settings]);
-
+  
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     const deadlineNum = parseInt(form.deadline, 10);
@@ -85,6 +87,21 @@ export default function Settings() {
     } catch (error) {
       console.error("Error clearing database:", error);
       setFeedback("Error clearing database.");
+      setTimeout(() => setFeedback(""), 4000);
+    }
+  };
+
+  const handleUpload = async () => {
+    if (!uploadFile) return;
+    try {
+      await uploadDataset(uploadCollection, uploadFile);
+      setFeedback(`Dataset successfully uploaded to ${uploadCollection}.`);
+      setTimeout(() => setFeedback(""), 4000);
+      setUploadFile(null);
+      const fileInput = document.querySelector('input[type="file"]') as HTMLInputElement;
+      if (fileInput) fileInput.value = '';
+    } catch (error) {
+      setFeedback(`Error uploading dataset.`);
       setTimeout(() => setFeedback(""), 4000);
     }
   };
@@ -213,6 +230,44 @@ export default function Settings() {
               >
                 <Trash2 size={14} />
                 Flush Database Cache
+              </button>
+            </div>
+          </div>
+
+          {/* Card 2: Dataset Uploads */}
+          <div className="bg-white rounded-3xl border border-slate-200/80 p-6 shadow-sm space-y-4">
+            <h3 className="font-extrabold text-slate-800 text-sm uppercase tracking-wide flex items-center gap-2"><Database size={16} className="text-blue-500" /> Dataset Uploads</h3>
+            <p className="text-xs text-slate-400 leading-relaxed font-medium">
+              Bulk upload CSV data directly into MongoDB collections.
+            </p>
+            
+            <div className="space-y-3 pt-2">
+              <select
+                value={uploadCollection}
+                onChange={(e) => setUploadCollection(e.target.value)}
+                className="w-full border border-slate-200 rounded-xl p-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 font-semibold text-slate-700"
+              >
+                <option value="students">Students</option>
+                <option value="results">Results</option>
+                <option value="requests">Requests</option>
+                <option value="minusPoints">Minus Points</option>
+                <option value="announcements">Announcements</option>
+                <option value="gallery">Gallery</option>
+              </select>
+
+              <input
+                type="file"
+                accept=".csv"
+                onChange={(e) => setUploadFile(e.target.files?.[0] || null)}
+                className="w-full text-xs text-slate-500 file:mr-4 file:py-2.5 file:px-4 file:rounded-xl file:border-0 file:text-xs file:font-bold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100 cursor-pointer"
+              />
+
+              <button
+                onClick={handleUpload}
+                disabled={!uploadFile}
+                className="w-full bg-blue-600 hover:bg-blue-700 disabled:bg-slate-300 text-white font-bold text-xs py-3.5 rounded-xl transition flex items-center justify-center gap-2 cursor-pointer"
+              >
+                Upload Dataset
               </button>
             </div>
           </div>
