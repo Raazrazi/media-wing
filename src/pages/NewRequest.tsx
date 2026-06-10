@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { useRequests } from "../context/RequestContext";
 import WarningModal from "../components/WarningModel";
-import GlassCard from "../components/GlassCard";
+
 import LoadingSpinner from "../components/LoadingSpinner";
 import ErrorToast from "../components/ErrorToast";
 import FormSection from "../components/FormSection";
@@ -129,7 +129,7 @@ export default function NewRequest() {
   // Success view block
   if (successRequest) {
     return (
-      <div className="max-w-2xl mx-auto space-y-6 py-4 animate-scale-in printable-area">
+      <div className="max-w-2xl mx-auto space-y-6 py-4 printable-area">
         
         {/* Receipt Header Card */}
         <div className="bg-white border border-slate-200 rounded-3xl p-8 shadow-glow-green text-center space-y-4">
@@ -140,14 +140,14 @@ export default function NewRequest() {
             <h1 className="text-2xl font-black text-slate-800 tracking-tight">
               Request Submitted Successfully
             </h1>
-            <p className="text-slate-400 text-sm mt-1 font-medium">
+            <p className="text-slate-800 text-sm mt-1 font-medium">
               Your registration has been logged in the designer queue database.
             </p>
           </div>
 
           <div className="inline-block bg-slate-50 border border-slate-200/80 rounded-2xl px-6 py-3 mt-2">
-            <p className="text-[10px] text-slate-400 font-bold uppercase tracking-wider">Registration ID</p>
-            <p className="text-xl font-black text-blue-600 tracking-tight mt-0.5">{successRequest.requestId}</p>
+            <p className="text-[10px] text-slate-600 font-bold uppercase tracking-wider">Registration ID</p>
+            <p className="text-xl font-black text-slate-600 tracking-tight mt-0.5">{successRequest.requestId}</p>
           </div>
         </div>
 
@@ -160,29 +160,29 @@ export default function NewRequest() {
           
           <div className="grid grid-cols-2 gap-y-4 gap-x-6 text-sm">
             <div>
-              <p className="text-slate-400 text-xs font-bold uppercase tracking-wider">Program Name</p>
+              <p className="text-slate-800 text-xs font-bold uppercase tracking-wider">Program Name</p>
               <p className="font-semibold text-slate-800 mt-1">{successRequest.programName}</p>
             </div>
             <div>
-              <p className="text-slate-400 text-xs font-bold uppercase tracking-wider">Program Title</p>
+              <p className="text-slate-800 text-xs font-bold uppercase tracking-wider">Program Title</p>
               <p className="font-semibold text-slate-800 mt-1">{successRequest.programTitle}</p>
             </div>
             <div>
-              <p className="text-slate-400 text-xs font-bold uppercase tracking-wider">Venue</p>
+              <p className="text-slate-800 text-xs font-bold uppercase tracking-wider">Venue</p>
               <p className="font-semibold text-slate-800 mt-1">{successRequest.venue}</p>
             </div>
             <div>
-              <p className="text-slate-400 text-xs font-bold uppercase tracking-wider">Organizing Committee</p>
+              <p className="text-slate-800 text-xs font-bold uppercase tracking-wider">Organizing Committee</p>
               <p className="font-semibold text-slate-800 mt-1">{successRequest.committee}</p>
             </div>
             <div>
-              <p className="text-slate-400 text-xs font-bold uppercase tracking-wider">Date & Time</p>
+              <p className="text-slate-800 text-xs font-bold uppercase tracking-wider">Date & Time</p>
               <p className="font-semibold text-slate-800 mt-1">
                 {new Date(successRequest.eventDateTime).toLocaleString()}
               </p>
             </div>
             <div>
-              <p className="text-slate-400 text-xs font-bold uppercase tracking-wider">Priority & Status</p>
+              <p className="text-slate-800 text-xs font-bold uppercase tracking-wider">Priority & Status</p>
               <div className="flex items-center gap-2 mt-1">
                 <span className="bg-slate-100 text-slate-700 px-2 py-0.5 rounded-full text-xs font-bold border border-slate-200">
                   {successRequest.priority}
@@ -193,7 +193,7 @@ export default function NewRequest() {
               </div>
             </div>
             <div className="col-span-2">
-              <p className="text-slate-400 text-xs font-bold uppercase tracking-wider">Contact Person</p>
+              <p className="text-slate-800 text-xs font-bold uppercase tracking-wider">Contact Person</p>
               <p className="font-semibold text-slate-800 mt-1">
                 {successRequest.contactPerson} ({successRequest.email})
               </p>
@@ -242,7 +242,7 @@ export default function NewRequest() {
       {isLoading && <LoadingSpinner />}
       {error && <ErrorToast message={error} onClose={() => {}} />}
 
-      <GlassCard className="max-w-4xl mx-auto space-y-8 animate-slide-up">
+      <div className="max-w-4xl mx-auto space-y-8 animate-slide-up bg-white rounded-2xl border border-slate-200 shadow-sm p-8">
         
         {/* Title widget */}
         <div className="flex items-center justify-between border-b pb-5 border-slate-200">
@@ -250,13 +250,13 @@ export default function NewRequest() {
             <h1 className="text-3xl font-extrabold text-slate-800 tracking-tight flex items-center gap-2">
               New Poster Registration
             </h1>
-            <p className="text-slate-500 mt-1 font-medium">
+            <p className="text-slate-800 mt-1 font-medium">
               Centralized publicity submission for Class Unions, Committees, and wings.
             </p>
           </div>
           <Link
             to={backPath}
-            className="text-slate-400 hover:text-slate-600 font-semibold text-sm flex items-center gap-1.5 transition-colors"
+            className="text-slate-800 hover:text-slate-600 font-semibold text-sm flex items-center gap-1.5 transition-colors"
           >
             <ArrowLeft size={16} />
             {backLabel}
@@ -288,7 +288,7 @@ export default function NewRequest() {
                   value={form.programName}
                   onChange={(e) => setForm({ ...form, programName: e.target.value })}
                   placeholder="e.g. Mock Hajj Campaign, Tech Expo"
-                  className={`w-full border rounded-xl p-3 text-sm transition-all focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 ${errors.programName ? "border-red-500 bg-red-50/20" : "border-slate-200"}`}
+                  className={`w-full border rounded-xl p-3 text-sm text-slate-800 bg-white placeholder-slate-400 transition-all focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 ${errors.programName ? "border-red-500 bg-red-50" : "border-slate-200"}`}
                 />
                 {errors.programName && <p className="text-red-500 text-xs mt-1.5 font-semibold">⚠️ {errors.programName}</p>}
               </div>
@@ -300,7 +300,7 @@ export default function NewRequest() {
                   value={form.programTitle}
                   onChange={(e) => setForm({ ...form, programTitle: e.target.value })}
                   placeholder="e.g. Labbaik Awareness, Code the Future"
-                  className={`w-full border rounded-xl p-3 text-sm transition-all focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 ${errors.programTitle ? "border-red-500 bg-red-50/20" : "border-slate-200"}`}
+                  className={`w-full border rounded-xl p-3 text-sm text-slate-800 bg-white placeholder-slate-400 transition-all focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 ${errors.programTitle ? "border-red-500 bg-red-50" : "border-slate-200"}`}
                 />
                 {errors.programTitle && <p className="text-red-500 text-xs mt-1.5 font-semibold">⚠️ {errors.programTitle}</p>}
               </div>
@@ -311,7 +311,7 @@ export default function NewRequest() {
                   type="datetime-local"
                   value={form.eventDateTime}
                   onChange={(e) => setForm({ ...form, eventDateTime: e.target.value })}
-                  className={`w-full border rounded-xl p-3 text-sm transition-all focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 ${errors.eventDateTime ? "border-red-500 bg-red-50/20" : "border-slate-200"}`}
+                  className={`w-full border rounded-xl p-3 text-sm text-slate-800 bg-white transition-all focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 ${errors.eventDateTime ? "border-red-500 bg-red-50" : "border-slate-200"}`}
                 />
                 {errors.eventDateTime && <p className="text-red-500 text-xs mt-1.5 font-semibold">⚠️ {errors.eventDateTime}</p>}
               </div>
@@ -323,7 +323,7 @@ export default function NewRequest() {
                   value={form.venue}
                   onChange={(e) => setForm({ ...form, venue: e.target.value })}
                   placeholder="e.g. Main Auditorium, Seminar Hall B"
-                  className={`w-full border rounded-xl p-3 text-sm transition-all focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 ${errors.venue ? "border-red-500 bg-red-50/20" : "border-slate-200"}`}
+                  className={`w-full border rounded-xl p-3 text-sm text-slate-800 bg-white placeholder-slate-400 transition-all focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 ${errors.venue ? "border-red-500 bg-red-50" : "border-slate-200"}`}
                 />
                 {errors.venue && <p className="text-red-500 text-xs mt-1.5 font-semibold">⚠️ {errors.venue}</p>}
               </div>
@@ -333,7 +333,7 @@ export default function NewRequest() {
                 <select
                   value={form.category}
                   onChange={(e) => setForm({ ...form, category: e.target.value })}
-                  className="w-full border border-slate-200 rounded-xl p-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500"
+                  className="w-full border border-slate-200 rounded-xl p-3 text-sm text-slate-800 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500"
                 >
                   {categories.map(cat => (
                     <option key={cat} value={cat}>{cat}</option>
@@ -346,7 +346,7 @@ export default function NewRequest() {
                 <select
                   value={form.priority}
                   onChange={(e) => setForm({ ...form, priority: e.target.value as any })}
-                  className="w-full border border-slate-200 rounded-xl p-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500"
+                  className="w-full border border-slate-200 rounded-xl p-3 text-sm text-slate-800 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500"
                 >
                   <option value="Normal">Normal</option>
                   <option value="High">High (Urgent design attention required)</option>
@@ -366,7 +366,7 @@ export default function NewRequest() {
                 <select
                   value={form.committee}
                   onChange={(e) => setForm({ ...form, committee: e.target.value })}
-                  className={`w-full border rounded-xl p-3 text-sm transition-all focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 ${errors.committee ? "border-red-500 bg-red-50/20" : "border-slate-200"}`}
+                  className={`w-full border rounded-xl p-3 text-sm text-slate-800 bg-white transition-all focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 ${errors.committee ? "border-red-500 bg-red-50/20" : "border-slate-200"}`}
                 >
                   {committees.map(comm => (
                     <option key={comm} value={comm}>{comm}</option>
@@ -382,7 +382,7 @@ export default function NewRequest() {
                   value={form.description}
                   onChange={(e) => setForm({ ...form, description: e.target.value })}
                   placeholder="Provide brief outline, guest list details, program flow, topics, etc. This helps the design team generate contextual artwork."
-                  className={`w-full border rounded-xl p-3 text-sm transition-all focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 ${errors.description ? "border-red-500 bg-red-50/20" : "border-slate-200"}`}
+                  className={`w-full border rounded-xl p-3 text-sm text-slate-800 bg-white placeholder-slate-400 transition-all focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 resize-none ${errors.description ? "border-red-500 bg-red-50" : "border-slate-200"}`}
                 />
                 {errors.description && <p className="text-red-500 text-xs mt-1.5 font-semibold">⚠️ {errors.description}</p>}
               </div>
@@ -394,7 +394,7 @@ export default function NewRequest() {
                   value={form.posterRequirements}
                   onChange={(e) => setForm({ ...form, posterRequirements: e.target.value })}
                   placeholder="Specify design sizes, resolution, theme color preferences, text titles to include, digital upload or print flex size."
-                  className={`w-full border rounded-xl p-3 text-sm transition-all focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 ${errors.posterRequirements ? "border-red-500 bg-red-50/20" : "border-slate-200"}`}
+                  className={`w-full border rounded-xl p-3 text-sm text-slate-800 bg-white placeholder-slate-400 transition-all focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 resize-none ${errors.posterRequirements ? "border-red-500 bg-red-50" : "border-slate-200"}`}
                 />
                 {errors.posterRequirements && <p className="text-red-500 text-xs mt-1.5 font-semibold">⚠️ {errors.posterRequirements}</p>}
               </div>
@@ -413,7 +413,7 @@ export default function NewRequest() {
                   value={form.contactPerson}
                   onChange={(e) => setForm({ ...form, contactPerson: e.target.value })}
                   placeholder="eg: Ahmed Amir"
-                  className={`w-full border rounded-xl p-3 text-sm transition-all focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 ${errors.contactPerson ? "border-red-500 bg-red-50/20" : "border-slate-200"}`}
+                  className={`w-full border rounded-xl p-3 text-sm text-slate-800 bg-white placeholder-slate-400 transition-all focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 ${errors.contactPerson ? "border-red-500 bg-red-50" : "border-slate-200"}`}
                 />
                 {errors.contactPerson && <p className="text-red-500 text-xs mt-1.5 font-semibold">⚠️ {errors.contactPerson}</p>}
               </div>
@@ -425,7 +425,7 @@ export default function NewRequest() {
                   value={form.email}
                   onChange={(e) => setForm({ ...form, email: e.target.value })}
                   placeholder="eg: web@example.com"
-                  className={`w-full border rounded-xl p-3 text-sm transition-all focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 ${errors.email ? "border-red-500 bg-red-50/20" : "border-slate-200"}`}
+                  className={`w-full border rounded-xl p-3 text-sm text-slate-800 bg-white placeholder-slate-400 transition-all focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 ${errors.email ? "border-red-500 bg-red-50" : "border-slate-200"}`}
                 />
                 {errors.email && <p className="text-red-500 text-xs mt-1.5 font-semibold">⚠️ {errors.email}</p>}
               </div>
@@ -452,7 +452,7 @@ export default function NewRequest() {
 
         </form>
 
-      </GlassCard>
+      </div>
     </>
   );
 }

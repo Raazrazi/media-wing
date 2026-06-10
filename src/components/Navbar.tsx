@@ -1,9 +1,8 @@
 import { useState, useRef, useEffect } from "react";
-import { Bell, Plus, Shield, Check, Menu, LogOut, User, Lock } from "lucide-react";
+import { Bell, Plus, Shield, Menu, LogOut, User, Lock, LayoutDashboard, Globe } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 import { useRequests } from "../context/RequestContext";
 import { useAuth } from "../context/AuthContext";
-import type { UserRole } from "../context/RequestContext";
 
 interface NavbarProps {
   onMenuToggle: () => void;
@@ -13,20 +12,16 @@ interface NavbarProps {
 
 export default function Navbar({ onMenuToggle, isAdmin = false, adminUser = null }: NavbarProps) {
   const navigate = useNavigate();
-  const { logout } = useAuth();
+  const { logout, isAuthenticated } = useAuth();
   const {
-    currentRole,
-    setCurrentRole,
     notifications,
     markNotificationsAsRead,
     settings
   } = useRequests();
 
-  const [showRoleMenu, setShowRoleMenu] = useState(false);
   const [showNotifMenu, setShowNotifMenu] = useState(false);
   const [showAdminMenu, setShowAdminMenu] = useState(false);
 
-  const roleMenuRef = useRef<HTMLDivElement>(null);
   const notifMenuRef = useRef<HTMLDivElement>(null);
   const adminMenuRef = useRef<HTMLDivElement>(null);
 
@@ -35,9 +30,6 @@ export default function Navbar({ onMenuToggle, isAdmin = false, adminUser = null
   // Close menus when clicking outside
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
-      if (roleMenuRef.current && !roleMenuRef.current.contains(event.target as Node)) {
-        setShowRoleMenu(false);
-      }
       if (notifMenuRef.current && !notifMenuRef.current.contains(event.target as Node)) {
         setShowNotifMenu(false);
       }
@@ -53,13 +45,6 @@ export default function Navbar({ onMenuToggle, isAdmin = false, adminUser = null
       logout();
       navigate("/admin/login", { replace: true });
     };
-
-  const roles: UserRole[] = ["Requester", "Media Chairman", "Media Wing Administrator"];
-
-  const handleRoleChange = (role: UserRole) => {
-    setCurrentRole(role);
-    setShowRoleMenu(false);
-  };
 
   const handleNotifClick = () => {
     setShowNotifMenu(!showNotifMenu);
@@ -104,42 +89,36 @@ export default function Navbar({ onMenuToggle, isAdmin = false, adminUser = null
 
         {/* Quick Controls */}
         <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 sm:gap-6 w-full sm:w-auto">
-        
-        {/* Role Switcher */}
-        <div className="relative" ref={roleMenuRef}>
-          <button
-            onClick={() => setShowRoleMenu(!showRoleMenu)}
-            className="flex items-center gap-2 bg-slate-100 hover:bg-slate-200 transition text-slate-700 px-3.5 py-2 rounded-xl text-sm font-semibold border border-slate-200"
-          >
-            <Shield size={16} className="text-blue-600" />
-            <span>{currentRole}</span>
-            <span className="text-slate-400 text-xs">▼</span>
-          </button>
 
-          {showRoleMenu && (
-            <div className="absolute right-0 mt-2 w-64 bg-white border border-slate-200 rounded-2xl shadow-xl py-2 z-50 animate-scale-in">
-              <div className="px-4 py-2 border-b border-slate-100">
-                <span className="text-xs text-slate-400 font-bold uppercase tracking-wider">
-                  Select User Context
-                </span>
-              </div>
-              {roles.map(role => (
-                <button
-                  key={role}
-                  onClick={() => handleRoleChange(role)}
-                  className={`w-full text-left px-4 py-2.5 text-sm transition-colors flex items-center justify-between ${
-                    currentRole === role
-                      ? "bg-blue-50 text-blue-700 font-semibold"
-                      : "text-slate-700 hover:bg-slate-50"
-                  }`}
-                >
-                  <span>{role}</span>
-                  {currentRole === role && <Check size={16} />}
-                </button>
-              ))}
-            </div>
-          )}
-        </div>
+        {/* Admin / Public View Switcher */}
+        {isAdmin ? (
+          <Link
+            to="/"
+            className="flex items-center gap-2 bg-slate-100 hover:bg-slate-200 transition text-slate-700 px-3.5 py-2 rounded-xl text-sm font-semibold border border-slate-200"
+            title="Switch to Public View"
+          >
+            <Globe size={15} className="text-slate-500" />
+            <span>Public View</span>
+          </Link>
+        ) : isAuthenticated ? (
+          <Link
+            to="/admin/dashboard"
+            className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 transition text-white px-3.5 py-2 rounded-xl text-sm font-semibold shadow-sm"
+            title="Switch to Admin Panel"
+          >
+            <LayoutDashboard size={15} />
+            <span>Admin Panel</span>
+          </Link>
+        ) : (
+          <Link
+            to="/admin/login"
+            className="flex items-center gap-2 bg-slate-800 hover:bg-slate-900 transition text-white px-3.5 py-2 rounded-xl text-sm font-semibold border border-slate-700 shadow-sm"
+            title="Admin Login"
+          >
+            <Lock size={15} className="text-slate-300" />
+            <span>Admin</span>
+          </Link>
+        )}
 
         {/* Notifications Center */}
         <div className="relative" ref={notifMenuRef}>

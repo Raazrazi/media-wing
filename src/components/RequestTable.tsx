@@ -102,6 +102,9 @@ export default function RequestTable({
                       <p className="font-semibold text-slate-800 text-sm group-hover:text-blue-600 transition-colors">
                         {request.programName}
                       </p>
+                      <p className="text-xs text-slate-600 mt-0.5">
+                        {request.programTitle}
+                      </p>
                       <span className="inline-flex items-center gap-1 mt-1 text-[10px] font-bold bg-slate-100 text-slate-500 px-2 py-0.5 rounded-full border border-slate-200 uppercase tracking-wide">
                         <Tag size={8} />
                         {request.category}

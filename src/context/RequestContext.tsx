@@ -251,7 +251,7 @@ const initialMockAnnouncements: Announcement[] = [
 export function RequestProvider({ children }: { children: ReactNode }) {
   const [requests, setRequests] = useState<PosterRequest[]>(() => {
     const saved = localStorage.getItem("union_media_requests");
-    return saved ? JSON.parse(saved) : initialMockRequests;
+    return saved ? JSON.parse(saved) : [];
   });
 
   const [currentRole, setRoleState] = useState<UserRole>(() => {
@@ -274,22 +274,22 @@ export function RequestProvider({ children }: { children: ReactNode }) {
 
   const [results, setResults] = useState<Result[]>(() => {
     const saved = localStorage.getItem("union_media_results");
-    return saved ? JSON.parse(saved) : initialMockResults;
+    return saved ? JSON.parse(saved) : [];
   });
 
   const [minusPoints, setMinusPoints] = useState<MinusPoint[]>(() => {
     const saved = localStorage.getItem("union_media_minus_points");
-    return saved ? JSON.parse(saved) : initialMockMinusPoints;
+    return saved ? JSON.parse(saved) : [];
   });
 
   const [galleryItems, setGalleryItems] = useState<GalleryItem[]>(() => {
     const saved = localStorage.getItem("union_media_gallery");
-    return saved ? JSON.parse(saved) : initialMockGallery;
+    return saved ? JSON.parse(saved) : [];
   });
 
   const [announcements, setAnnouncements] = useState<Announcement[]>(() => {
     const saved = localStorage.getItem("union_media_announcements");
-    return saved ? JSON.parse(saved) : initialMockAnnouncements;
+    return saved ? JSON.parse(saved) : [];
   });
 
   useEffect(() => {

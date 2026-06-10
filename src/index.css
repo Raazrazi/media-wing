@@ -15,6 +15,30 @@
     color: #1e293b;
     -webkit-font-smoothing: antialiased;
   }
+
+  /* Remove browser-default grey from ALL form controls */
+  input,
+  select,
+  textarea {
+    background-color: #ffffff;
+    color: #1e293b;
+    -webkit-appearance: none;
+    appearance: none;
+  }
+
+  /* Restore select arrow on non-webkit */
+  select {
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%2364748b' d='M6 8L1 3h10z'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 12px center;
+    padding-right: 2.5rem !important;
+  }
+
+  /* datetime-local calendar icon color fix */
+  input[type="datetime-local"]::-webkit-calendar-picker-indicator {
+    filter: opacity(0.5);
+    cursor: pointer;
+  }
 }
 
 /* Animations */
