@@ -1,7 +1,8 @@
 import { Link, useLocation } from "react-router-dom";
-import StatusBadge from "./StatusBadge";
+import { useRequests } from "../context/RequestContext";
 import type { PosterRequest } from "../types/Request";
-import { Eye, Calendar, User, Tag } from "lucide-react";
+import StatusBadge from "./StatusBadge";
+import { Eye, Calendar, User, Tag, Trash2 } from "lucide-react";
 
 interface RequestTableProps {
   requests: PosterRequest[];
@@ -14,6 +15,7 @@ export default function RequestTable({
   title = "Poster Requests Queue",
   limit
 }: RequestTableProps) {
+  const { deleteRequest } = useRequests();
   const location = useLocation();
   const showAction = location.pathname.startsWith("/admin");
   const displayRequests = limit ? requests.slice(0, limit) : requests;
@@ -147,13 +149,28 @@ export default function RequestTable({
 
                   {showAction && (
                     <td className="px-6 py-4.5 text-center">
-                      <Link
-                        to={`/admin/request/${request.requestId}`}
-                        className="inline-flex items-center gap-1.5 bg-blue-50 text-blue-600 hover:bg-blue-600 hover:text-white px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all shadow-sm hover:shadow-glow-blue"
-                      >
-                        <Eye size={12} />
-                        View
-                      </Link>
+                      <>
+                        <Link
+                          to={`/admin/request/${request.requestId}`}
+                          className="inline-flex items-center gap-1.5 bg-blue-50 text-blue-600 hover:bg-blue-600 hover:text-white px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all shadow-sm hover:shadow-glow-blue"
+                        >
+                          <Eye size={12} />
+                          View
+                        </Link>
+                        <button
+                          onClick={async () => {
+                            try {
+                              await deleteRequest(request.requestId);
+                            } catch (e) {
+                              console.error(e);
+                            }
+                          }}
+                          className="ml-2 inline-flex items-center gap-1.5 bg-red-50 text-red-600 hover:bg-red-600 hover:text-white px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all shadow-sm hover:shadow-glow-red"
+                        >
+                          <Trash2 size={12} />
+                          Delete
+                        </button>
+                      </>
                     </td>
                   )}
                 </tr>

@@ -33,6 +33,7 @@ interface RequestContextType {
   galleryItems: GalleryItem[];
   announcements: Announcement[];
   addRequest: (request: Omit<PosterRequest, "requestId" | "createdAt" | "status">) => Promise<PosterRequest>;
+  deleteRequest: (id: string) => Promise<void>;
   updateRequestStatus: (id: string, status: PosterRequest["status"], remarks?: string) => Promise<void>;
   updateSettings: (settings: SystemSettings) => Promise<void>;
   setCurrentRole: (role: UserRole) => void;
@@ -394,6 +395,18 @@ export function RequestProvider({ children }: { children: ReactNode }) {
     }
   };
 
+  const deleteRequest = async (id: string) => {
+    try {
+      await api.delete(`/requests/${id}`);
+      setRequests(prev => prev.filter(r => r.requestId !== id));
+      addNotification(`Request ${id} deleted successfully.`);
+    } catch (error) {
+      console.error('Failed to delete request:', error);
+      addNotification(`Error: Failed to delete request ${id}.`);
+      throw error;
+    }
+  };
+
   const updateRequestStatus = async (
     id: string,
     status: PosterRequest["status"],
@@ -694,6 +707,7 @@ export function RequestProvider({ children }: { children: ReactNode }) {
         galleryItems,
         announcements,
         addRequest,
+        deleteRequest,
         updateRequestStatus,
         updateSettings,
         setCurrentRole,
