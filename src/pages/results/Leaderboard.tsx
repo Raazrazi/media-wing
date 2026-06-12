@@ -53,8 +53,40 @@ export default function Leaderboard() {
         </div>
       </div>
 
-      {/* Standings table register */}
-      <div className="bg-white rounded-3xl border border-slate-200 overflow-hidden shadow-sm">
+      {/* Mobile standings cards */}
+      <div className="space-y-4 sm:hidden">
+        {sortedStandings.map((item) => (
+          <div key={item.class} className="bg-white border border-slate-200 rounded-3xl p-5 shadow-sm space-y-3">
+            <div className="flex items-center justify-between gap-3">
+              <div>
+                <p className="text-xs font-bold uppercase tracking-[0.3em] text-slate-400">Rank</p>
+                <p className="text-lg font-black text-slate-900">#{item.rank}</p>
+              </div>
+              <div className="text-right">
+                <p className="text-xs font-bold uppercase tracking-[0.3em] text-slate-400">Net Points</p>
+                <p className="text-lg font-black text-blue-600">{item.net} pts</p>
+              </div>
+            </div>
+            <div className="grid grid-cols-2 gap-3 text-sm">
+              <div className="rounded-2xl bg-slate-50 p-3">
+                <p className="text-[10px] uppercase tracking-[0.25em] text-slate-400">Class Union</p>
+                <p className="font-semibold text-slate-800 mt-1">{item.class}</p>
+              </div>
+              <div className="rounded-2xl bg-slate-50 p-3">
+                <p className="text-[10px] uppercase tracking-[0.25em] text-slate-400">Points Earned</p>
+                <p className="font-semibold text-emerald-600 mt-1">{item.earned} pts</p>
+              </div>
+              <div className="rounded-2xl bg-slate-50 p-3 col-span-2">
+                <p className="text-[10px] uppercase tracking-[0.25em] text-slate-400">Deductions</p>
+                <p className="font-semibold text-rose-600 mt-1">-{item.minus} pts</p>
+              </div>
+            </div>
+          </div>
+        ))}
+      </div>
+
+      {/* Desktop standings table */}
+      <div className="hidden sm:block bg-white rounded-3xl border border-slate-200 overflow-hidden shadow-sm">
         <div className="overflow-x-auto">
           <table className="w-full text-left">
             <thead>

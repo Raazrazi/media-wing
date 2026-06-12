@@ -267,6 +267,13 @@ select:focus {
   }
 }
 
+/* Navbar visibility transition on mobile */
+@media (max-width: 768px) {
+  .md\:block {
+    display: block;
+  }
+}
+
 .glass-card-dark {
   background: rgba(15, 23, 42, 0.85);
   backdrop-filter: blur(12px);

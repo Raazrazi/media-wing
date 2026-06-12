@@ -35,7 +35,20 @@ export default function PublicLayout() {
       )}
       
       <div className="flex-1 flex flex-col min-h-screen overflow-hidden">
-        {!isSplashScreen && <Navbar onMenuToggle={handleMenuToggle} isAdmin={false} />}
+        {!isSplashScreen && (
+          <motion.div
+            initial={{ opacity: 1, y: 0 }}
+            animate={sidebarOpen ? { opacity: 0, y: -100 } : { opacity: 1, y: 0 }}
+            transition={{ duration: 0.3, ease: "easeInOut" }}
+            className="md:relative md:opacity-100 md:translate-y-0"
+            style={{
+              pointerEvents: sidebarOpen ? "none" : "auto",
+              position: sidebarOpen ? "fixed" : "relative",
+            }}
+          >
+            <Navbar onMenuToggle={handleMenuToggle} isAdmin={false} />
+          </motion.div>
+        )}
         
         <main className={isSplashScreen ? "flex-1 overflow-y-auto" : "flex-1 overflow-y-auto p-4 sm:p-6 lg:p-8 custom-scrollbar"}>
           <AnimatePresence mode="wait">

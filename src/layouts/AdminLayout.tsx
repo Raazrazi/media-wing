@@ -29,7 +29,18 @@ export default function AdminLayout() {
         />
       )}
       <div className="flex-1 flex flex-col overflow-hidden min-w-0">
-        <Navbar onMenuToggle={handleMenuToggle} isAdmin={true} adminUser={adminUser} />
+        <motion.div
+          initial={{ opacity: 1, y: 0 }}
+          animate={sidebarOpen ? { opacity: 0, y: -100 } : { opacity: 1, y: 0 }}
+          transition={{ duration: 0.3, ease: "easeInOut" }}
+          className="md:relative md:opacity-100 md:translate-y-0"
+          style={{
+            pointerEvents: sidebarOpen ? "none" : "auto",
+            position: sidebarOpen ? "fixed" : "relative",
+          }}
+        >
+          <Navbar onMenuToggle={handleMenuToggle} isAdmin={true} adminUser={adminUser} />
+        </motion.div>
         <main className="flex-1 overflow-y-auto p-6 custom-scrollbar">
           <AnimatePresence mode="wait">
             <motion.div key={location.pathname} {...pageTransition}>

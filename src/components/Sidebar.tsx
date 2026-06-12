@@ -174,10 +174,11 @@ export default function Sidebar({ open = false, onClose, isAdmin = false }: Side
         <button
           type="button"
           onClick={onClose}
-          className="md:hidden p-2 rounded-xl text-slate-400 hover:bg-slate-800/70 hover:text-white transition"
+          className="md:hidden p-2.5 rounded-xl bg-slate-800/60 hover:bg-red-600/40 text-slate-300 hover:text-red-200 transition-all duration-200 flex items-center justify-center"
           aria-label="Close menu"
+          title="Close sidebar"
         >
-          <X size={16} />
+          <X size={18} />
         </button>
       </div>
 

@@ -81,7 +81,7 @@ export default function Results({ mode = "public" }: { mode?: "all" | "announced
       </div>
 
       {/* Search Bar */}
-      <div className="relative max-w-md">
+      <div className="relative max-w-full sm:max-w-md">
         <Search size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" />
         <input
           type="text"
@@ -92,8 +92,72 @@ export default function Results({ mode = "public" }: { mode?: "all" | "announced
         />
       </div>
 
+      {/* Mobile Result Cards */}
+      <div className="space-y-4 sm:hidden">
+        {filteredResults.length === 0 ? (
+          <div className="bg-white border border-slate-200 rounded-3xl p-6 shadow-sm text-center text-slate-500 font-semibold">
+            No results found.
+          </div>
+        ) : (
+          filteredResults.map((item) => (
+            <div key={item._id || `${item.programName}-${item.studentName}`} className="bg-white border border-slate-200 rounded-3xl p-5 shadow-sm space-y-4">
+              <div className="flex items-center justify-between gap-3">
+                <div>
+                  <p className="text-sm text-slate-500 uppercase tracking-[0.25em] font-bold">Program</p>
+                  <p className="text-base font-black text-slate-900">{item.programName}</p>
+                </div>
+                <span className="text-[11px] font-bold uppercase tracking-[0.28em] text-slate-500">
+                  {item.prize} Place
+                </span>
+              </div>
+
+              <div className="grid grid-cols-2 gap-3 text-sm">
+                <div className="bg-slate-50 rounded-2xl p-3">
+                  <p className="text-slate-400 text-[10px] uppercase tracking-[0.25em] font-semibold">Student</p>
+                  <p className="font-semibold text-slate-800">{item.studentName}</p>
+                </div>
+                <div className="bg-slate-50 rounded-2xl p-3">
+                  <p className="text-slate-400 text-[10px] uppercase tracking-[0.25em] font-semibold">Class</p>
+                  <p className="font-semibold text-slate-800">{item.className}</p>
+                </div>
+              </div>
+
+              <div className="flex flex-wrap items-center gap-3 text-sm">
+                <span className="px-3 py-2 rounded-2xl bg-blue-50 text-blue-700 font-semibold">+{item.points} pts</span>
+                {item.isPublished ? (
+                  <span className="px-3 py-2 rounded-2xl bg-emerald-50 text-emerald-700 font-semibold">Published</span>
+                ) : (
+                  <span className="px-3 py-2 rounded-2xl bg-slate-50 text-slate-600 font-semibold">Draft</span>
+                )}
+              </div>
+
+              {isAdminView && (
+                <div className="flex flex-wrap gap-3">
+                  <button
+                    onClick={() => item._id && publishResult && publishResult(item._id, !item.isPublished)}
+                    className={`rounded-2xl px-4 py-2 text-sm font-semibold transition ${
+                      item.isPublished
+                        ? "bg-emerald-600 text-white"
+                        : "bg-slate-100 text-slate-700 hover:bg-slate-200"
+                    }`}
+                  >
+                    {item.isPublished ? "Hide" : "Publish"}
+                  </button>
+                  <button
+                    onClick={() => item._id && deleteResult && deleteResult(item._id)}
+                    className="rounded-2xl px-4 py-2 text-sm font-semibold text-red-600 bg-red-50 hover:bg-red-100 transition"
+                  >
+                    Delete
+                  </button>
+                </div>
+              )}
+            </div>
+          ))
+        )}
+      </div>
+
       {/* Results Table */}
-      <div className="bg-white rounded-3xl border border-slate-200 overflow-hidden shadow-sm">
+      <div className="hidden sm:block bg-white rounded-3xl border border-slate-200 overflow-hidden shadow-sm">
         <div className="overflow-x-auto">
           <table className="w-full text-left">
             <thead>
@@ -158,7 +222,6 @@ export default function Results({ mode = "public" }: { mode?: "all" | "announced
                     {isAdminView && (
                       <td className="px-6 py-4 text-center">
                         <div className="flex items-center justify-center gap-2">
-                          {/* Publish/Hide button */}
                           <button
                             onClick={() => item._id && publishResult && publishResult(item._id, !item.isPublished)}
                             className={`p-1.5 rounded-xl border transition cursor-pointer ${
@@ -170,8 +233,6 @@ export default function Results({ mode = "public" }: { mode?: "all" | "announced
                           >
                             {item.isPublished ? <Globe size={16} /> : <EyeOff size={16} />}
                           </button>
-
-                          {/* Delete button */}
                           <button
                             onClick={() => item._id && deleteResult && deleteResult(item._id)}
                             className="p-1.5 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-xl border border-transparent hover:border-red-100 transition cursor-pointer"
