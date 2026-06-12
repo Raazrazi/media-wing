@@ -31,7 +31,7 @@ export default function Sidebar({ open = false, onClose, isAdmin = false }: Side
     {
       section: "Public Portal",
       items: [
-        { name: "Home", path: "/", icon: <Home size={18} /> },
+        { name: "Home", path: "/home", icon: <Home size={18} /> },
         { name: "Submit Request", path: "/new-request", icon: <PlusCircle size={18} /> },
         { name: "My Requests", path: "/requests", icon: <FileText size={18} /> },
         { name: "Results", path: "/results", icon: <Trophy size={18} /> },

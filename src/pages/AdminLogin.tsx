@@ -1,10 +1,16 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import { Lock, User, Eye, EyeOff, ShieldCheck, AlertCircle } from "lucide-react";
 
 export default function AdminLogin() {
-  const { login } = useAuth();
+  const { login, logout } = useAuth();
+
+  useEffect(() => {
+    // Clear any existing admin session when opening the login page
+    logout();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
   const navigate = useNavigate();
 
   const [username, setUsername] = useState("");

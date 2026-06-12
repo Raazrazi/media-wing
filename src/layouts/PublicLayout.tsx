@@ -1,8 +1,10 @@
 import { useState, useEffect } from "react";
 import Footer from "../components/Footer";
 import { Outlet, useLocation } from "react-router-dom";
+import { motion, AnimatePresence } from "framer-motion";
 import Sidebar from "../components/Sidebar";
 import Navbar from "../components/Navbar";
+import { pageTransition } from "../styles/animations";
 
 export default function PublicLayout() {
   const location = useLocation();
@@ -20,10 +22,12 @@ export default function PublicLayout() {
     setSidebarOpen(false);
   };
 
+  const isSplashScreen = location.pathname === "/";
+
   return (
     <div className="flex min-h-screen bg-slate-50 animate-fade-in">
-      <Sidebar open={sidebarOpen} onClose={handleCloseSidebar} isAdmin={false} />
-      {sidebarOpen && (
+      {!isSplashScreen && <Sidebar open={sidebarOpen} onClose={handleCloseSidebar} isAdmin={false} />}
+      {!isSplashScreen && sidebarOpen && (
         <div
           onClick={handleCloseSidebar}
           className="fixed inset-0 bg-slate-900/40 z-10 md:hidden"
@@ -31,16 +35,18 @@ export default function PublicLayout() {
       )}
       
       <div className="flex-1 flex flex-col min-h-screen overflow-hidden">
-        <Navbar onMenuToggle={handleMenuToggle} isAdmin={false} />
+        {!isSplashScreen && <Navbar onMenuToggle={handleMenuToggle} isAdmin={false} />}
         
-        <main className="flex-1 overflow-y-auto p-4 sm:p-6 lg:p-8 custom-scrollbar">
-          <div className="max-w-7xl mx-auto">
-            <Outlet />
-          </div>
+        <main className={isSplashScreen ? "flex-1 overflow-y-auto" : "flex-1 overflow-y-auto p-4 sm:p-6 lg:p-8 custom-scrollbar"}>
+          <AnimatePresence mode="wait">
+            <motion.div key={location.pathname} {...pageTransition} className={isSplashScreen ? "w-full h-full" : "max-w-7xl mx-auto"}>
+              <Outlet />
+            </motion.div>
+          </AnimatePresence>
         </main>
         
         {/* Footer */}
-          <Footer />
+        {!isSplashScreen && <Footer />}
       </div>
     </div>
   );

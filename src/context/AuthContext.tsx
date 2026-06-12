@@ -18,11 +18,11 @@ const ADMIN_CREDENTIALS = {
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [isAuthenticated, setIsAuthenticated] = useState<boolean>(() => {
-    return localStorage.getItem("union_admin_auth") === "true";
+    return sessionStorage.getItem("union_admin_auth") === "true";
   });
 
   const [adminUser, setAdminUser] = useState<string | null>(() => {
-    return localStorage.getItem("union_admin_user");
+    return sessionStorage.getItem("union_admin_user");
   });
 
   const login = (username: string, password: string): boolean => {
@@ -32,8 +32,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     ) {
       setIsAuthenticated(true);
       setAdminUser(username);
-      localStorage.setItem("union_admin_auth", "true");
-      localStorage.setItem("union_admin_user", username);
+      sessionStorage.setItem("union_admin_auth", "true");
+      sessionStorage.setItem("union_admin_user", username);
       return true;
     }
     return false;
@@ -42,8 +42,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const logout = () => {
     setIsAuthenticated(false);
     setAdminUser(null);
-    localStorage.removeItem("union_admin_auth");
-    localStorage.removeItem("union_admin_user");
+    sessionStorage.removeItem("union_admin_auth");
+    sessionStorage.removeItem("union_admin_user");
   };
 
   return (

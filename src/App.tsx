@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { Routes, Route, Navigate, Outlet, useLocation } from "react-router-dom";
 
+
 import PublicLayout from "./layouts/PublicLayout";
 import AdminLogin from "./pages/AdminLogin";
 import AdminRoute from "./components/AdminRoute";
@@ -21,6 +22,8 @@ import Sidebar from "./components/Sidebar";
 import Navbar from "./components/Navbar";
 
 // New page imports
+
+import SplashScreen from "./pages/SplashScreen";
 import PortalHome from "./pages/PortalHome";
 import PublicGallery from "./pages/PublicGallery";
 import AdminGallery from "./pages/AdminGallery";
@@ -70,7 +73,10 @@ export default function App() {
         }
       >
         <Route index element={<Navigate to="dashboard" replace />} />
+
+
         <Route path="dashboard" element={<Dashboard />} />
+
         <Route path="new-request" element={<NewRequest />} />
         <Route path="requests" element={<RequestHistory />} />
         <Route path="request/:id" element={<RequestDetails />} />
@@ -91,7 +97,8 @@ export default function App() {
 
       {/* Public portal routes */}
       <Route path="/" element={<PublicLayout />}>
-        <Route index element={<PortalHome />} />
+        <Route index element={<SplashScreen />} />
+        <Route path="home" element={<PortalHome />} />
         <Route path="new-request" element={<NewRequest />} />
         <Route path="requests" element={<RequestHistory />} />
         <Route path="request/:id" element={<RequestDetails />} />

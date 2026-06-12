@@ -1,8 +1,10 @@
 import { useState, useRef, useEffect } from "react";
 import { Bell, Plus, Shield, Menu, LogOut, User, Lock, LayoutDashboard, Globe } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
+import { motion } from "framer-motion";
 import { useRequests } from "../context/RequestContext";
 import { useAuth } from "../context/AuthContext";
+import { transitions } from "../styles/animations";
 
 interface NavbarProps {
   onMenuToggle: () => void;
@@ -102,9 +104,9 @@ export default function Navbar({ onMenuToggle, isAdmin = false, adminUser = null
           </Link>
         ) : isAuthenticated ? (
           <Link
-            to="/admin/dashboard"
+            to="/admin/login"
             className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 transition text-white px-3.5 py-2 rounded-xl text-sm font-semibold shadow-sm"
-            title="Switch to Admin Panel"
+            title="Admin Login"
           >
             <LayoutDashboard size={15} />
             <span>Admin Panel</span>
@@ -135,7 +137,13 @@ export default function Navbar({ onMenuToggle, isAdmin = false, adminUser = null
           </button>
 
           {showNotifMenu && (
-            <div className="absolute right-0 mt-2 w-80 md:w-96 bg-white border border-slate-200 rounded-2xl shadow-xl py-2 z-50 animate-scale-in">
+            <motion.div
+              initial={{ opacity: 0, y: -10, scale: 0.95 }}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              exit={{ opacity: 0, y: -10, scale: 0.95 }}
+              transition={transitions.smooth}
+              className="absolute right-0 mt-2 w-80 md:w-96 bg-white border border-slate-200 rounded-2xl shadow-xl py-2 z-50 origin-top-right"
+            >
               <div className="px-4 py-2 border-b border-slate-100 flex justify-between items-center">
                 <span className="text-xs text-slate-500 font-bold uppercase tracking-wider">
                   Recent Activity Logs
@@ -169,7 +177,7 @@ export default function Navbar({ onMenuToggle, isAdmin = false, adminUser = null
                   ))
                 )}
               </div>
-            </div>
+            </motion.div>
           )}
         </div>
 
@@ -186,7 +194,13 @@ export default function Navbar({ onMenuToggle, isAdmin = false, adminUser = null
             </button>
 
             {showAdminMenu && (
-              <div className="absolute right-0 mt-2 w-56 bg-white border border-slate-200 rounded-2xl shadow-xl py-2 z-50 animate-scale-in">
+              <motion.div
+                initial={{ opacity: 0, y: -10, scale: 0.95 }}
+                animate={{ opacity: 1, y: 0, scale: 1 }}
+                exit={{ opacity: 0, y: -10, scale: 0.95 }}
+                transition={transitions.smooth}
+                className="absolute right-0 mt-2 w-56 bg-white border border-slate-200 rounded-2xl shadow-xl py-2 z-50 origin-top-right"
+              >
                 <div className="px-4 py-2 border-b border-slate-100">
                   <span className="text-xs text-slate-400 font-bold uppercase tracking-wider">Admin Portal</span>
                   <p className="text-sm font-semibold text-slate-800 mt-1 flex items-center gap-2">
@@ -208,7 +222,7 @@ export default function Navbar({ onMenuToggle, isAdmin = false, adminUser = null
                   <LogOut size={14} />
                   Logout
                 </button>
-              </div>
+              </motion.div>
             )}
           </div>
         )}
