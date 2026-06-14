@@ -460,11 +460,19 @@ app.delete("/api/minus-points/:id", async (req, res) => {
 // Get all gallery items
 app.get("/api/gallery", async (req, res) => {
   try {
-    const query = req.query.published === "true" ? { isPublished: true } : {};
-    const items = await GalleryModel.find(query).sort({ createdAt: -1 });
+    const query =
+      req.query.published === "true"
+        ? { isPublished: true }
+        : {};
+
+    const items = await GalleryModel.find(query);
+
     res.json(items);
   } catch (err) {
-    res.status(500).json({ error: "Wait a minute for loading server", details: err.message });
+    res.status(500).json({
+      error: "Gallery fetch failed",
+      details: err.message
+    });
   }
 });
 
@@ -559,13 +567,13 @@ app.get("/api/students/:admissionNo", async (req, res) => {
 // --- UPLOAD ENDPOINT ---
 app.post("/api/upload/:collection", upload.single('dataset'), async (req, res) => {
   const collectionName = req.params.collection;
+  console.log('Upload route hit')
   const file = req.file;
 
   if (!file) {
     return res.status(400).json({ error: "No file uploaded" });
   }
 
-  const results = [];
   try {
     const modelMap = {
       'requests': RequestModel,
@@ -578,32 +586,34 @@ app.post("/api/upload/:collection", upload.single('dataset'), async (req, res) =
     };
 
     const Model = modelMap[collectionName];
-    if (!Model) {
-      fs.unlinkSync(file.path);
+    if (!Model) { 
+      if (fs.existsSync(file.path)) fs.unlinkSync(file.path);
       return res.status(400).json({ error: `Invalid collection name: ${collectionName}` });
     }
+    
+    const parser = fs.createReadStream(file.path).pipe(csvParser());
+    const batchSize = 1000;
+    let batch = [];
+    let totalInserted = 0;
 
-    fs.createReadStream(file.path)
-      .pipe(csvParser())
-      .on('data', (data) => results.push(data))
-      .on('end', async () => {
-        try {
-          if (results.length > 0) {
-            await Model.insertMany(results);
-          }
-          fs.unlinkSync(file.path);
-          res.json({ message: `Successfully uploaded ${results.length} records to ${collectionName}` });
-        } catch (dbErr) {
-          fs.unlinkSync(file.path);
-          res.status(500).json({ error: "Database insertion failed", details: dbErr.message });
-        }
-      })
-      .on('error', (err) => {
-        fs.unlinkSync(file.path);
-        res.status(500).json({ error: "Error parsing CSV", details: err.message });
-      });
+    for await (const record of parser) {
+      batch.push(record);
+      if (batch.length >= batchSize) {
+        await Model.insertMany(batch);
+        totalInserted += batch.length;
+        batch = [];
+      }
+    }
+
+    if (batch.length > 0) {
+      await Model.insertMany(batch);
+      totalInserted += batch.length;
+    }
+
+    if (fs.existsSync(file.path)) fs.unlinkSync(file.path);
+    res.json({ message: `Successfully uploaded ${totalInserted} records to ${collectionName}` });
   } catch (err) {
-    if (file) fs.unlinkSync(file.path);
+    if (file && fs.existsSync(file.path)) fs.unlinkSync(file.path);
     res.status(500).json({ error: "Upload processing failed", details: err.message });
   }
 });
