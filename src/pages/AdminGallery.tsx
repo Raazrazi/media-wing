@@ -1,4 +1,4 @@
-import { useState, useRef, type FormEvent } from "react";
+import { useState, useRef, useEffect, type FormEvent } from "react";
 import { useRequests } from "../context/RequestContext";
 import { Trash2, Star, Plus, Image as ImageIcon, Play, Link as LinkIcon, Upload } from "lucide-react";
 
@@ -9,34 +9,78 @@ function DualInput({
   urlValue,
   onUrlChange,
   onFileChange,
+  onFilesChange,
+  multiple = false,
+  filesValue = [],
   placeholder,
 }: {
   label: string;
   accept: string;
   urlValue: string;
   onUrlChange: (val: string) => void;
-  onFileChange: (objectUrl: string) => void;
+  onFileChange?: (objectUrl: string) => void;
+  onFilesChange?: (files: { name: string; data: string }[]) => void;
+  multiple?: boolean;
+  filesValue?: { name: string; data: string }[];
   placeholder: string;
 }) {
   const [mode, setMode] = useState<"url" | "file">("url");
   const [fileName, setFileName] = useState("");
   const [preview, setPreview] = useState("");
+  const [fileNames, setFileNames] = useState<string[]>([]);
+  const [previews, setPreviews] = useState<string[]>([]);
   const fileRef = useRef<HTMLInputElement>(null);
 
-  const handleFile = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-    const objectUrl = URL.createObjectURL(file);
-    setPreview(objectUrl);
-    setFileName(file.name);
+  useEffect(() => {
+    if (multiple && filesValue.length === 0) {
+      setPreviews([]);
+      setFileNames([]);
+    } else if (!multiple && (!urlValue || urlValue === "")) {
+      setPreview("");
+      setFileName("");
+    }
+  }, [urlValue, filesValue, multiple]);
 
-    const reader = new FileReader();
-    reader.onloadend = () => {
-      if (typeof reader.result === "string") {
-        onFileChange(reader.result);
-      }
-    };
-    reader.readAsDataURL(file);
+  const handleFile = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
+    if (!files || files.length === 0) return;
+
+    if (multiple) {
+      const fileList = Array.from(files);
+      const objectUrls = fileList.map((file) => URL.createObjectURL(file));
+      setPreviews(objectUrls);
+      setFileNames(fileList.map((f) => f.name));
+
+      const loadedData: { name: string; data: string }[] = [];
+      let loadedCount = 0;
+
+      fileList.forEach((file, index) => {
+        const reader = new FileReader();
+        reader.onloadend = () => {
+          if (typeof reader.result === "string") {
+            loadedData[index] = { name: file.name, data: reader.result };
+          }
+          loadedCount++;
+          if (loadedCount === fileList.length) {
+            onFilesChange?.(loadedData.filter(Boolean));
+          }
+        };
+        reader.readAsDataURL(file);
+      });
+    } else {
+      const file = files[0];
+      const objectUrl = URL.createObjectURL(file);
+      setPreview(objectUrl);
+      setFileName(file.name);
+
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        if (typeof reader.result === "string") {
+          onFileChange?.(reader.result);
+        }
+      };
+      reader.readAsDataURL(file);
+    }
   };
 
   const isVideo = accept.includes("video");
@@ -87,7 +131,24 @@ function DualInput({
             onClick={() => fileRef.current?.click()}
             className="w-full border-2 border-dashed border-slate-200 rounded-xl p-4 flex flex-col items-center justify-center gap-2 cursor-pointer hover:border-blue-400 hover:bg-blue-50/40 transition"
           >
-            {preview ? (
+            {multiple && previews.length > 0 ? (
+              <div className="grid grid-cols-3 gap-2 w-full max-h-48 overflow-y-auto p-1 custom-scrollbar">
+                {previews.map((prev, idx) => (
+                  <div key={idx} className="relative group rounded-lg overflow-hidden border border-slate-200 bg-slate-50 aspect-video flex items-center justify-center">
+                    {isVideo ? (
+                      <video src={prev} className="w-full h-full object-cover" />
+                    ) : (
+                      <img src={prev} alt="" className="w-full h-full object-cover" />
+                    )}
+                    <div className="absolute inset-0 bg-slate-900/40 opacity-0 group-hover:opacity-100 transition flex items-center justify-center p-1">
+                      <p className="text-[9px] text-white font-bold truncate max-w-full text-center">
+                        {fileNames[idx]}
+                      </p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : !multiple && preview ? (
               isVideo ? (
                 <video src={preview} className="h-20 rounded-lg object-cover" controls />
               ) : (
@@ -96,16 +157,20 @@ function DualInput({
             ) : (
               <>
                 {isVideo ? <Play size={24} className="text-slate-400" /> : <ImageIcon size={24} className="text-slate-400" />}
-                <p className="text-xs text-slate-400 font-medium">Click to browse {isVideo ? "video" : "image"}</p>
+                <p className="text-xs text-slate-400 font-medium">Click to browse {isVideo ? "video" : "image"}{multiple ? "s" : ""}</p>
               </>
             )}
-            {fileName && <p className="text-[10px] text-slate-500 truncate max-w-full">{fileName}</p>}
+            {!multiple && fileName && <p className="text-[10px] text-slate-500 truncate max-w-full">{fileName}</p>}
+            {multiple && fileNames.length > 0 && (
+              <p className="text-[10px] text-blue-600 font-bold">{fileNames.length} file(s) selected</p>
+            )}
           </div>
           <input
             ref={fileRef}
             type="file"
             accept={accept}
             onChange={handleFile}
+            multiple={multiple}
             className="hidden"
           />
         </div>
@@ -127,42 +192,113 @@ export default function AdminGallery() {
     category: "Posters" as "Posters" | "Posts" | "Videos",
     thumbnail: "",
     mediaFile: "",
+    mediaFiles: [] as { name: string; data: string }[],
     isFeatured: false,
     isPublished: true,
   });
 
   const [showAddForm, setShowAddForm] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
-    if (!form.title.trim()) return;
+    if (isSubmitting) return;
 
-    let thumbnail = form.thumbnail.trim();
-    let mediaFile = form.mediaFile.trim();
+    const hasFiles = form.mediaFiles.length > 0;
 
-    if (!thumbnail) {
-      if (form.category === "Posters") {
-        thumbnail = "https://images.unsplash.com/photo-1564507592333-c60657eea523?w=500&auto=format&fit=crop&q=60";
-      } else if (form.category === "Posts") {
-        thumbnail = "https://images.unsplash.com/photo-1508098682722-e99c43a406b2?w=500&auto=format&fit=crop&q=60";
-      } else {
-        thumbnail = "https://images.unsplash.com/photo-1542601906990-b4d3fb778b09?w=500&auto=format&fit=crop&q=60";
-      }
+    if (!form.title.trim() && !hasFiles) {
+      alert("Please enter an asset title.");
+      return;
     }
-    if (!mediaFile) {
-      if (form.category === "Videos") {
-        mediaFile = "https://www.w3schools.com/html/mov_bbb.mp4";
-      } else {
-        mediaFile = thumbnail;
-      }
-    }
+
+    setIsSubmitting(true);
 
     try {
-      await addGalleryItem({ ...form, thumbnail, mediaFile });
-      setForm({ title: "", description: "", category: "Posters", thumbnail: "", mediaFile: "", isFeatured: false, isPublished: true });
+      if (hasFiles) {
+        // Bulk upload mode
+        for (let i = 0; i < form.mediaFiles.length; i++) {
+          const file = form.mediaFiles[i];
+          
+          let computedTitle = form.title.trim();
+          const cleanFileName = file.name.substring(0, file.name.lastIndexOf('.')) || file.name;
+          if (computedTitle) {
+            if (form.mediaFiles.length > 1) {
+              computedTitle = `${computedTitle} - ${cleanFileName}`;
+            }
+          } else {
+            computedTitle = cleanFileName;
+          }
+
+          const mediaFile = file.data;
+          let thumbnail = form.thumbnail.trim();
+
+          if (!thumbnail) {
+            if (form.category === "Videos") {
+              thumbnail = "https://images.unsplash.com/photo-1542601906990-b4d3fb778b09?w=500&auto=format&fit=crop&q=60";
+            } else {
+              thumbnail = mediaFile;
+            }
+          }
+
+          await addGalleryItem({
+            title: computedTitle,
+            description: form.description,
+            category: form.category,
+            thumbnail,
+            mediaFile,
+            isFeatured: form.isFeatured,
+            isPublished: form.isPublished
+          });
+        }
+      } else {
+        // Single URL mode
+        let thumbnail = form.thumbnail.trim();
+        let mediaFile = form.mediaFile.trim();
+
+        if (!thumbnail) {
+          if (form.category === "Posters") {
+            thumbnail = "https://images.unsplash.com/photo-1564507592333-c60657eea523?w=500&auto=format&fit=crop&q=60";
+          } else if (form.category === "Posts") {
+            thumbnail = "https://images.unsplash.com/photo-1508098682722-e99c43a406b2?w=500&auto=format&fit=crop&q=60";
+          } else {
+            thumbnail = "https://images.unsplash.com/photo-1542601906990-b4d3fb778b09?w=500&auto=format&fit=crop&q=60";
+          }
+        }
+        if (!mediaFile) {
+          if (form.category === "Videos") {
+            mediaFile = "https://www.w3schools.com/html/mov_bbb.mp4";
+          } else {
+            mediaFile = thumbnail;
+          }
+        }
+
+        await addGalleryItem({
+          title: form.title,
+          description: form.description,
+          category: form.category,
+          thumbnail,
+          mediaFile,
+          isFeatured: form.isFeatured,
+          isPublished: form.isPublished
+        });
+      }
+
+      setForm({
+        title: "",
+        description: "",
+        category: "Posters",
+        thumbnail: "",
+        mediaFile: "",
+        mediaFiles: [],
+        isFeatured: false,
+        isPublished: true
+      });
       setShowAddForm(false);
     } catch (err) {
       console.error(err);
+      alert("Failed to upload some gallery assets.");
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -199,15 +335,14 @@ export default function AdminGallery() {
             <div className="space-y-4">
               <div>
                 <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">
-                  Asset Title
+                  Asset Title {form.mediaFiles.length <= 1 && <span className="text-red-500">*</span>}
                 </label>
                 <input
                   type="text"
-                  placeholder="e.g. Tree Plantation Drive Flyer"
+                  placeholder={form.mediaFiles.length > 1 ? "Optional base title (defaults to filenames)" : "e.g. Tree Plantation Drive Flyer"}
                   value={form.title}
                   onChange={(e) => setForm({ ...form, title: e.target.value })}
                   className="w-full border border-slate-200 rounded-xl p-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500"
-                  required
                 />
               </div>
 
@@ -217,7 +352,7 @@ export default function AdminGallery() {
                 </label>
                 <select
                   value={form.category}
-                  onChange={(e) => setForm({ ...form, category: e.target.value as any })}
+                  onChange={(e) => setForm({ ...form, category: e.target.value as any, mediaFile: "", mediaFiles: [], thumbnail: "" })}
                   className="w-full border border-slate-200 rounded-xl p-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500"
                 >
                   <option value="Posters">Posters (Design flex format)</option>
@@ -277,8 +412,11 @@ export default function AdminGallery() {
                 label={`Media File – ${form.category === "Videos" ? "Video" : "Image"} (Optional)`}
                 accept={form.category === "Videos" ? "video/*" : "image/*"}
                 urlValue={form.mediaFile}
-                onUrlChange={(val) => setForm({ ...form, mediaFile: val })}
-                onFileChange={(url) => setForm({ ...form, mediaFile: url })}
+                onUrlChange={(val) => setForm({ ...form, mediaFile: val, mediaFiles: [] })}
+                onFileChange={(url) => setForm({ ...form, mediaFile: url, mediaFiles: [] })}
+                onFilesChange={(files) => setForm({ ...form, mediaFiles: files, mediaFile: "" })}
+                multiple={true}
+                filesValue={form.mediaFiles}
                 placeholder={form.category === "Videos" ? "Paste video URL..." : "Paste full-size image URL..."}
               />
             </div>
@@ -287,15 +425,17 @@ export default function AdminGallery() {
               <button
                 type="button"
                 onClick={() => setShowAddForm(false)}
+                disabled={isSubmitting}
                 className="bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs px-5 py-3 rounded-xl transition cursor-pointer"
               >
                 Cancel
               </button>
               <button
                 type="submit"
-                className="bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs px-5 py-3 rounded-xl transition cursor-pointer hover:shadow-glow-blue"
+                disabled={isSubmitting}
+                className="bg-blue-600 hover:bg-blue-700 disabled:bg-slate-300 text-white font-bold text-xs px-5 py-3 rounded-xl transition cursor-pointer hover:shadow-glow-blue"
               >
-                Register Asset
+                {isSubmitting ? "Registering..." : "Register Asset"}
               </button>
             </div>
           </form>

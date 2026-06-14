@@ -7,6 +7,35 @@ import type { GalleryItem } from "../types/Gallery";
 import type { Announcement } from "../types/Announcement";
 import api from "../services/api";
 
+const safeSetItem = (key: string, value: string) => {
+  try {
+    localStorage.setItem(key, value);
+  } catch (error) {
+    console.warn(`Failed to save ${key} to localStorage (quota exceeded or storage disabled):`, error);
+  }
+};
+
+const safeGetItem = (key: string): string | null => {
+  try {
+    return localStorage.getItem(key);
+  } catch (error) {
+    console.warn(`Failed to retrieve ${key} from localStorage:`, error);
+    return null;
+  }
+};
+
+const safeParse = <T,>(key: string, fallback: T): T => {
+  try {
+    const raw = localStorage.getItem(key);
+    if (!raw) return fallback;
+    return JSON.parse(raw) as T;
+  } catch (error) {
+    console.warn(`Corrupted data in localStorage key "${key}", clearing it:`, error);
+    try { localStorage.removeItem(key); } catch (_) { /* ignore */ }
+    return fallback;
+  }
+};
+
 export type UserRole = "Requester" | "Media Chairman" | "Media Wing Administrator";
 
 export interface SystemSettings {
@@ -250,79 +279,72 @@ const initialMockAnnouncements: Announcement[] = [
 ];
 
 export function RequestProvider({ children }: { children: ReactNode }) {
-  const [requests, setRequests] = useState<PosterRequest[]>(() => {
-    const saved = localStorage.getItem("union_media_requests");
-    return saved ? JSON.parse(saved) : [];
-  });
+  const [requests, setRequests] = useState<PosterRequest[]>(() =>
+    safeParse<PosterRequest[]>("union_media_requests", [])
+  );
 
   const [currentRole, setRoleState] = useState<UserRole>(() => {
-    const saved = localStorage.getItem("union_media_role");
+    const saved = safeGetItem("union_media_role");
     return (saved as UserRole) || "Media Chairman";
   });
 
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  const [settings, setSettingsState] = useState<SystemSettings>(() => {
-    const saved = localStorage.getItem("union_media_settings");
-    return saved ? JSON.parse(saved) : defaultSettings;
-  });
+  const [settings, setSettingsState] = useState<SystemSettings>(() =>
+    safeParse<SystemSettings>("union_media_settings", defaultSettings)
+  );
 
-  const [notifications, setNotifications] = useState<ActivityNotification[]>(() => {
-    const saved = localStorage.getItem("union_media_notifications");
-    return saved ? JSON.parse(saved) : initialNotifications;
-  });
+  const [notifications, setNotifications] = useState<ActivityNotification[]>(() =>
+    safeParse<ActivityNotification[]>("union_media_notifications", initialNotifications)
+  );
 
-  const [results, setResults] = useState<Result[]>(() => {
-    const saved = localStorage.getItem("union_media_results");
-    return saved ? JSON.parse(saved) : [];
-  });
+  const [results, setResults] = useState<Result[]>(() =>
+    safeParse<Result[]>("union_media_results", [])
+  );
 
-  const [minusPoints, setMinusPoints] = useState<MinusPoint[]>(() => {
-    const saved = localStorage.getItem("union_media_minus_points");
-    return saved ? JSON.parse(saved) : [];
-  });
+  const [minusPoints, setMinusPoints] = useState<MinusPoint[]>(() =>
+    safeParse<MinusPoint[]>("union_media_minus_points", [])
+  );
 
-  const [galleryItems, setGalleryItems] = useState<GalleryItem[]>(() => {
-    const saved = localStorage.getItem("union_media_gallery");
-    return saved ? JSON.parse(saved) : [];
-  });
+  const [galleryItems, setGalleryItems] = useState<GalleryItem[]>(() =>
+    safeParse<GalleryItem[]>("union_media_gallery", [])
+  );
 
-  const [announcements, setAnnouncements] = useState<Announcement[]>(() => {
-    const saved = localStorage.getItem("union_media_announcements");
-    return saved ? JSON.parse(saved) : [];
-  });
+  const [announcements, setAnnouncements] = useState<Announcement[]>(() =>
+    safeParse<Announcement[]>("union_media_announcements", [])
+  );
 
   useEffect(() => {
-    localStorage.setItem("union_media_requests", JSON.stringify(requests));
+    safeSetItem("union_media_requests", JSON.stringify(requests));
   }, [requests]);
 
   useEffect(() => {
-    localStorage.setItem("union_media_role", currentRole);
+    safeSetItem("union_media_role", currentRole);
   }, [currentRole]);
 
   useEffect(() => {
-    localStorage.setItem("union_media_settings", JSON.stringify(settings));
+    safeSetItem("union_media_settings", JSON.stringify(settings));
   }, [settings]);
 
   useEffect(() => {
-    localStorage.setItem("union_media_notifications", JSON.stringify(notifications));
+    safeSetItem("union_media_notifications", JSON.stringify(notifications));
   }, [notifications]);
 
   useEffect(() => {
-    localStorage.setItem("union_media_results", JSON.stringify(results));
+    safeSetItem("union_media_results", JSON.stringify(results));
   }, [results]);
 
   useEffect(() => {
-    localStorage.setItem("union_media_minus_points", JSON.stringify(minusPoints));
+    safeSetItem("union_media_minus_points", JSON.stringify(minusPoints));
   }, [minusPoints]);
 
   useEffect(() => {
-    localStorage.setItem("union_media_gallery", JSON.stringify(galleryItems));
+    safeSetItem("union_media_gallery", JSON.stringify(galleryItems));
   }, [galleryItems]);
 
   useEffect(() => {
-    localStorage.setItem("union_media_announcements", JSON.stringify(announcements));
+    safeSetItem("union_media_announcements", JSON.stringify(announcements));
   }, [announcements]);
 
   // Sync with Backend API
